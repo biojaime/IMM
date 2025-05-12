@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel del Alumno</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f0f8ff; padding: 20px; }
+    .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    h1, h2 { text-align: center; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    table, th, td { border: 1px solid #ccc; }
+    th, td { padding: 10px; text-align: center; }
+    .comentarios { background-color: #f9f9f9; padding: 10px; border-radius: 5px; margin-top: 20px; }
+    canvas { margin-top: 30px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Bienvenido/a</h1>
+    <div id="infoAlumno"></div>
+    <div id="calificaciones"></div>
+    <canvas id="graficaProgreso" width="400" height="200"></canvas>
+    <div class="comentarios" id="comentarios"></div>
+  </div>
+
+  <script>
+    const alumno = JSON.parse(localStorage.getItem("alumnoActual"));
+
+    if (!alumno) {
+      document.body.innerHTML = "<h2>No tienes acceso. Inicia sesión primero.</h2>";
+    } else {
+      document.querySelector("h1").textContent = `Bienvenido/a ${alumno.Nombre} ${alumno.Apellido}`;
+      document.getElementById("infoAlumno").innerHTML = `
+        <p><strong>Correo:</strong> ${alumno.Correo}</p>
+        <p><strong>Matrícula:</strong> ${alumno.Matricula}</p>
+        <p><strong>Grado:</strong> ${alumno.Grado}</p>
+        <p><strong>Grupo:</strong> ${alumno.Grupo}</p>
+      `;
+
+      const materias = ["Biología", "Informática"];
+      const parciales = ["Parcial 1", "Parcial 2", "Parcial 3", "Parcial 4", "Parcial 5", "Parcial 6"];
+
+      function leyenda(calif) {
+        if (calif === "-") return "";
+        if (calif >= 10) return "Excelente";
+        if (calif >= 9) return "Bueno";
+        if (calif >= 8) return "Promedio";
+        if (calif >= 7) return "Regular";
+        if (calif >= 6) return "Podría mejorar";
+        return "Malo (Reprobado)";
+      }
+
+      let html = "<h2>Calificaciones</h2>";
+      const datosGrafica = [];
+
+      materias.forEach(materia => {
+        html += `<h3>${materia}</h3><table><tr><th>Parcial</th><th>Calificación</th><th>Descripción</th></tr>`;
+        let parcialesArr = [];
+        for (let i = 1; i <= 6; i++) {
+          const key = `${materia}_P${i}`;
+          let calif = alumno[key] || "-";
+          if (!isNaN(parseFloat(calif))) {
+            calif = parseFloat(calif);
+            if (calif >= 6 && calif % 1 === 0.5) calif = Math.ceil(calif);
+            parcialesArr.push(calif);
+            datosGrafica.push({ x: `${materia} P${i}`, y: calif });
+          } else {
+            parcialesArr.push("-");
+          }
+          html += `<tr><td>${parciales[i - 1]}</td><td>${calif}</td><td>${leyenda(calif)}</td></tr>`;
+        }
+
+        const bimestres = [
+          average(parcialesArr[0], parcialesArr[1]),
+          average(parcialesArr[2], parcialesArr[3]),
+          average(parcialesArr[4], parcialesArr[5])
+        ];
+
+        html += `<tr><td><strong>Promedio Bimestre 1</strong></td><td colspan="2"><strong>${bimestres[0]}</strong> (${leyenda(bimestres[0])})</td></tr>`;
+        html += `<tr><td><strong>Promedio Bimestre 2</strong></td><td colspan="2"><strong>${bimestres[1]}</strong> (${leyenda(bimestres[1])})</td></tr>`;
+        html += `<tr><td><strong>Promedio Bimestre 3</strong></td><td colspan="2"><strong>${bimestres[2]}</strong> (${leyenda(bimestres[2])})</td></tr>`;
+
+        const bimestresValidos = bimestres.filter(b => typeof b === "number");
+        let promedioFinal = bimestresValidos.length ? (bimestresValidos.reduce((a, b) => a + b, 0) / bimestresValidos.length) : "N/A";
+        if (typeof promedioFinal === "number") promedioFinal = promedioFinal.toFixed(2);
+
+        html += `<tr><td><strong>Promedio Final</strong></td><td colspan="2"><strong>${promedioFinal}</strong> (${leyenda(promedioFinal)})</td></tr>`;
+        html += `</table>`;
+      });
+
+      document.getElementById("calificaciones").innerHTML = html;
+      const comentarios = alumno.Comentarios || "Sin comentarios disponibles.";
+      document.getElementById("comentarios").innerHTML = `
+        <h2>Comentarios del docente</h2>
+        <p>${comentarios}</p>
+      `;
+
+      // Gráfica de progreso
+      const ctx = document.getElementById("graficaProgreso").getContext("2d");
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: datosGrafica.map(d => d.x),
+          datasets: [{
+            label: 'Calificación',
+            data: datosGrafica.map(d => d.y),
+            borderColor: 'blue',
+            backgroundColor: 'lightblue',
+            tension: 0.3,
+            fill: false,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              suggestedMin: 1,
+              suggestedMax: 10,
+              ticks: { stepSize: 1 }
+            }
+          },
+          plugins: {
+            title: { display: true, text: 'Progreso Académico en el Ciclo Escolar' }
+          }
+        }
+      });
+    }
+
+    function average(a, b) {
+      if (typeof a !== "number" || typeof b !== "number") return "-";
+      let avg = (a + b) / 2;
+      if (avg >= 6 && avg % 1 === 0.5) avg = Math.ceil(avg);
+      return parseFloat(avg.toFixed(2));
+    }
+  </script>
+</body>
+</html>
