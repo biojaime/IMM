@@ -2,137 +2,164 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Admin</title>
+  <title>Panel Administrador</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
-    h1 { text-align: center; }
-    select, input, button, textarea { margin: 8px; padding: 6px; }
-    .section { background: white; padding: 20px; margin-top: 20px; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+    body { font-family: Arial, sans-serif; background-color: #eef; padding: 20px; }
+    .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    h1, h2 { text-align: center; }
+    label, select, input, button, textarea { display: block; margin: 10px auto; }
+    select, input, button, textarea { padding: 5px; width: 90%; max-width: 400px; }
     .hidden { display: none; }
-    .message { color: green; font-weight: bold; }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h1>Bienvenido Administrador</h1>
 
-  <h1>Bienvenido Administrador</h1>
+    <label for="gradoSelect">Selecciona un grado:</label>
+    <select id="gradoSelect">
+      <option value="">-- Grado --</option>
+    </select>
 
-  <!-- Selección de alumno -->
-  <div class="section">
+    <label for="grupoSelect">Selecciona un grupo:</label>
+    <select id="grupoSelect">
+      <option value="">-- Grupo --</option>
+    </select>
+
     <label for="alumnoSelect">Selecciona un alumno:</label>
     <select id="alumnoSelect">
-      <option value="">-- Selecciona --</option>
+      <option value="">-- Alumno --</option>
     </select>
-  </div>
 
-  <!-- Selección de materia -->
-  <div class="section hidden" id="materiaSection">
-    <label for="materiaSelect">Materia:</label>
-    <select id="materiaSelect">
-      <option value="Biologia">Biología</option>
-      <option value="Informatica">Informática</option>
-    </select>
-    <br>
-    <button onclick="verCalificaciones()">Ver Calificaciones</button>
-    <button onclick="mostrarEdicion()">Editar Calificaciones</button>
-  </div>
+    <div id="materiaSection" class="hidden">
+      <label for="materiaSelect">Materia:</label>
+      <select id="materiaSelect">
+        <option value="Biologia">Biología</option>
+        <option value="Informatica">Informática</option>
+      </select>
+      <button onclick="verCalificaciones()">Ver Calificaciones</button>
+      <button onclick="mostrarEdicion()">Editar Calificaciones</button>
+    </div>
 
-  <!-- Ver calificaciones -->
-  <div class="section hidden" id="verSection">
-    <h2>Datos del Alumno</h2>
-    <div id="datosAlumno"></div>
-    <h3>Calificaciones</h3>
-    <div id="verCalificaciones"></div>
-    <h3>Comentarios</h3>
-    <div id="verComentarios"></div>
-  </div>
+    <div id="verSection" class="hidden">
+      <h2>Datos del Alumno</h2>
+      <div id="datosAlumno"></div>
+      <h3>Calificaciones</h3>
+      <div id="verCalificaciones"></div>
+      <h3>Comentarios</h3>
+      <div id="verComentarios"></div>
+    </div>
 
-  <!-- Editar calificaciones -->
-  <div class="section hidden" id="editarSection">
-    <h2>Editar Calificación</h2>
-    <label for="parcial">Parcial (1 a 6):</label>
-    <input type="number" id="parcial" min="1" max="6">
-    <label for="calificacion">Calificación (1 a 10):</label>
-    <input type="number" id="calificacion" min="1" max="10">
-    <br>
-    <label for="comentario">Comentario:</label><br>
-    <textarea id="comentario" rows="3" cols="40"></textarea>
-    <br>
-    <button onclick="guardarCalificacion()">Guardar</button>
-    <div class="message" id="mensajeGuardado"></div>
+    <div id="editarSection" class="hidden">
+      <h2>Editar Calificación</h2>
+      <label for="parcial">Parcial (1 a 6):</label>
+      <input type="number" id="parcial" min="1" max="6">
+      <label for="calificacion">Calificación (1 a 10):</label>
+      <input type="number" id="calificacion" min="1" max="10">
+      <label for="comentario">Comentario:</label>
+      <textarea id="comentario" rows="3"></textarea>
+      <button onclick="guardarCalificacion()">Guardar</button>
+      <div id="mensajeGuardado" style="color:green;"></div>
+    </div>
   </div>
 
   <script>
-    const csvURL = "https://raw.githubusercontent.com/biojaime/IMM/b7646fcd970cae3207e819ff12dbe592aa40bf1d/BD.csv";
     let alumnos = [];
+    const gradoSelect = document.getElementById("gradoSelect");
+    const grupoSelect = document.getElementById("grupoSelect");
+    const alumnoSelect = document.getElementById("alumnoSelect");
 
-    function cargarCSVDesdeGitHub() {
-      fetch(csvURL)
-        .then(res => res.text())
-        .then(data => {
-          localStorage.setItem("baseCSV", data);
-          parseCSV(data);
-        })
-        .catch(err => {
-          console.error("Error al cargar el CSV:", err);
-          alert("No se pudo cargar la base de datos desde GitHub.");
+    fetch("https://raw.githubusercontent.com/biojaime/IMM/b7646fcd970cae3207e819ff12dbe592aa40bf1d/BD.csv")
+      .then(response => response.text())
+      .then(data => {
+        const lines = data.split("\n").filter(line => line.trim() !== "");
+        const headers = lines[0].split(",");
+        alumnos = lines.slice(1).map(line => {
+          const values = line.split(",");
+          const obj = {};
+          headers.forEach((header, i) => obj[header.trim()] = values[i]?.trim());
+          return obj;
+        });
+
+        const grados = [...new Set(alumnos.map(a => a.Grado))].sort();
+        const grupos = [...new Set(alumnos.map(a => a.Grupo))].sort();
+
+        grados.forEach(g => {
+          const option = document.createElement("option");
+          option.value = g;
+          option.textContent = g;
+          gradoSelect.appendChild(option);
+        });
+
+        grupos.forEach(g => {
+          const option = document.createElement("option");
+          option.value = g;
+          option.textContent = g;
+          grupoSelect.appendChild(option);
+        });
+
+        actualizarListaAlumnos();
+      });
+
+    gradoSelect.addEventListener("change", actualizarListaAlumnos);
+    grupoSelect.addEventListener("change", actualizarListaAlumnos);
+
+    alumnoSelect.addEventListener("change", () => {
+      if (alumnoSelect.value) {
+        document.getElementById("materiaSection").classList.remove("hidden");
+        document.getElementById("verSection").classList.add("hidden");
+        document.getElementById("editarSection").classList.add("hidden");
+      }
+    });
+
+    function actualizarListaAlumnos() {
+      const grado = gradoSelect.value;
+      const grupo = grupoSelect.value;
+      alumnoSelect.innerHTML = '<option value="">-- Alumno --</option>';
+
+      alumnos
+        .filter(a => (!grado || a.Grado === grado) && (!grupo || a.Grupo === grupo))
+        .forEach(a => {
+          const option = document.createElement("option");
+          option.value = a.Matricula;
+          option.textContent = `${a.Nombre} ${a.Apellido}`;
+          alumnoSelect.appendChild(option);
         });
     }
 
-    function parseCSV(data) {
-      const lines = data.trim().split("\n");
-      const headers = lines[0].split(",");
-      alumnos = lines.slice(1).map(line => {
-        const values = line.split(",");
-        let obj = {};
-        headers.forEach((h, i) => obj[h.trim()] = values[i].trim());
-        return obj;
-      });
-
-      const select = document.getElementById("alumnoSelect");
-      select.innerHTML = '<option value="">-- Selecciona --</option>';
-      alumnos.forEach((a, i) => {
-        const option = document.createElement("option");
-        option.value = i;
-        option.textContent = `${a.Nombre} ${a.Apellido}`;
-        select.appendChild(option);
-      });
-    }
-
-    document.getElementById("alumnoSelect").addEventListener("change", function () {
-      document.getElementById("materiaSection").classList.remove("hidden");
-      document.getElementById("verSection").classList.add("hidden");
-      document.getElementById("editarSection").classList.add("hidden");
-    });
-
     function verCalificaciones() {
-      const idx = document.getElementById("alumnoSelect").value;
+      const matricula = alumnoSelect.value;
       const materia = document.getElementById("materiaSelect").value;
-      if (idx === "") return;
-
-      const alumno = alumnos[idx];
-      const key = `${alumno.Matricula}_${materia}`;
+      const alumno = alumnos.find(a => a.Matricula === matricula);
+      const key = `${matricula}_${materia}`;
       const registro = JSON.parse(localStorage.getItem(key)) || {};
 
       let htmlCal = "";
       for (let i = 1; i <= 6; i++) {
-        const nota = registro[`P${i}`] || "No registrada";
+        let nota = parseFloat(registro[`P${i}`]);
+        if (isNaN(nota)) {
+          nota = "No registrada";
+        } else {
+          nota = Math.round(nota * 10) / 10;
+          const leyenda = leyendaNota(nota);
+          nota = `${nota} - ${leyenda}`;
+        }
         htmlCal += `Parcial ${i}: ${nota}<br>`;
       }
 
-      const b1 = promedio(registro[`P1`], registro[`P2`]);
-      const b2 = promedio(registro[`P3`], registro[`P4`]);
-      const b3 = promedio(registro[`P5`], registro[`P6`]);
+      const b1 = calcularPromedio(registro[`P1`], registro[`P2`]);
+      const b2 = calcularPromedio(registro[`P3`], registro[`P4`]);
+      const b3 = calcularPromedio(registro[`P5`], registro[`P6`]);
 
-      let htmlInfo = `
-        Nombre: ${alumno.Nombre} ${alumno.Apellido}<br>
-        Matrícula: ${alumno.Matricula}<br>
-        Grado: ${alumno.Grado} - Grupo: ${alumno.Grupo}<br>`;
+      let htmlInfo = `Nombre: ${alumno.Nombre} ${alumno.Apellido}<br>
+                      Matrícula: ${alumno.Matricula}<br>
+                      Grado: ${alumno.Grado} - Grupo: ${alumno.Grupo}<br>`;
 
       document.getElementById("datosAlumno").innerHTML = htmlInfo;
       document.getElementById("verCalificaciones").innerHTML = htmlCal +
-        `<br><strong>Promedio B1:</strong> ${b1} <br><strong>Promedio B2:</strong> ${b2} <br><strong>Promedio B3:</strong> ${b3}`;
-      document.getElementById("verComentarios").innerText = registro.comentario || "Sin comentarios";
+        `<br><strong>Promedio B1:</strong> ${b1}<br><strong>Promedio B2:</strong> ${b2}<br><strong>Promedio B3:</strong> ${b3}<br><strong>Promedio Final:</strong> ${promedioFinal([b1, b2, b3])}`;
 
+      document.getElementById("verComentarios").textContent = registro.comentario || "Sin comentarios";
       document.getElementById("verSection").classList.remove("hidden");
       document.getElementById("editarSection").classList.add("hidden");
     }
@@ -143,7 +170,7 @@
     }
 
     function guardarCalificacion() {
-      const idx = document.getElementById("alumnoSelect").value;
+      const matricula = alumnoSelect.value;
       const materia = document.getElementById("materiaSelect").value;
       const parcial = parseInt(document.getElementById("parcial").value);
       const calificacion = parseFloat(document.getElementById("calificacion").value);
@@ -154,24 +181,40 @@
         return;
       }
 
-      const alumno = alumnos[idx];
-      const key = `${alumno.Matricula}_${materia}`;
+      const key = `${matricula}_${materia}`;
       let registro = JSON.parse(localStorage.getItem(key)) || {};
       registro[`P${parcial}`] = calificacion;
       if (comentario) registro.comentario = comentario;
-
       localStorage.setItem(key, JSON.stringify(registro));
       document.getElementById("mensajeGuardado").textContent = "✅ Calificación guardada exitosamente";
     }
 
-    function promedio(a, b) {
+    function calcularPromedio(a, b) {
       a = parseFloat(a); b = parseFloat(b);
       if (isNaN(a) || isNaN(b)) return "Incompleto";
-      return ((a + b) / 2).toFixed(2);
+      let prom = (a + b) / 2;
+      return redondear(prom);
     }
 
-    window.onload = () => {
-      cargarCSVDesdeGitHub();
+    function promedioFinal(bimestres) {
+      const nums = bimestres.map(b => parseFloat(b)).filter(n => !isNaN(n));
+      if (nums.length !== 3) return "Incompleto";
+      return redondear(nums.reduce((a, b) => a + b, 0) / 3);
+    }
+
+    function redondear(num) {
+      const parteDecimal = num - Math.floor(num);
+      if (num >= 6 && parteDecimal >= 0.5) return Math.ceil(num);
+      return Math.floor(num * 10 + 0.5) / 10;
+    }
+
+    function leyendaNota(nota) {
+      if (nota === 10) return "Excelente";
+      if (nota === 9) return "Bueno";
+      if (nota === 8) return "Promedio";
+      if (nota === 7) return "Regular";
+      if (nota === 6) return "Podría mejorar";
+      return "Malo (Reprobado)";
     }
   </script>
 </body>
