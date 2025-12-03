@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *;">
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Master Challenge</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .excel-green { color: #107c41; }
+        .bg-excel-green { background-color: #107c41; }
+        
+        /* Estilos de Tabla */
+        .excel-table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
+        .excel-table th, .excel-table td { border: 1px solid #d1d5db; padding: 6px; text-align: center; }
+        .excel-table th { background-color: #f3f4f6; color: #4b5563; font-weight: 600; }
+        .excel-table td { background-color: #fff; }
+        .excel-header-col { background-color: #f3f4f6; font-weight: bold; width: 30px; }
+
+        /* Estilos de Caritas */
+        .face-reaction { transition: all 0.3s ease; font-size: 2.5rem; }
+        .face-sad { color: #ef4444; transform: rotate(-10deg); }
+        .face-neutral { color: #9ca3af; }
+        .face-happy { color: #10b981; transform: scale(1.1); }
+        .face-super-happy { color: #f59e0b; transform: scale(1.2); animation: bounce 0.5s; }
+        @keyframes bounce { 0%, 100% {transform: translateY(0);} 50% {transform: translateY(-10px);} }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex items-center justify-center p-2">
+
+    <div class="w-full max-w-4xl bg-white rounded-2xl shadow-xl overflow-hidden fade-in border border-gray-200">
+        
+        <div class="bg-excel-green p-5 text-white flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold"><i class="fas fa-file-excel mr-2"></i>Excel Master</h1>
+                <p class="text-green-100 text-xs">Evaluación Práctica</p>
+            </div>
+            <div class="flex gap-4">
+                <div class="text-right">
+                    <p class="text-xs text-green-200 uppercase">Pregunta</p>
+                    <p id="question-counter" class="font-bold text-lg">1/10</p>
+                </div>
+                <div class="text-right bg-green-800 px-3 py-1 rounded border border-green-600">
+                    <p class="text-xs text-green-200 uppercase">Puntos</p>
+                    <p id="live-score" class="font-bold text-xl text-yellow-300">0 / 30</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-register" class="p-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Registro de Alumno</h2>
+            <div class="space-y-4 max-w-md mx-auto">
+                <input type="text" id="input-name" class="block w-full rounded border-gray-300 border p-3 focus:border-green-500 outline-none" placeholder="Nombre Completo">
+                <div class="grid grid-cols-2 gap-4">
+                    <select id="input-grade" class="block w-full rounded border-gray-300 border p-3 bg-white">
+                        <option>1º Semestre</option>
+                        <option>2º Semestre</option>
+                        <option>3º Semestre</option>
+                        <option>4º Semestre</option>
+                        <option>5º Semestre</option>
+                        <option>6º Semestre</option>
+                    </select>
+                    <input type="text" id="input-group" class="block w-full rounded border-gray-300 border p-3" placeholder="Grupo">
+                </div>
+                <button onclick="startQuiz()" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold py-3 rounded transition shadow-lg">
+                    Comenzar Examen
+                </button>
+            </div>
+        </div>
+
+        <div id="view-quiz" class="hidden p-6">
+            <div class="w-full bg-gray-200 rounded-full h-1 mb-6">
+                <div id="progress-bar" class="bg-yellow-400 h-1 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-6 mb-6">
+                <div class="md:w-5/12">
+                    <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded">Scenario</span>
+                    <p id="question-scenario" class="text-md font-medium mt-2 text-gray-800 leading-snug">
+                        </p>
+                </div>
+                <div class="md:w-7/12 bg-white border border-gray-300 p-2 rounded shadow-sm overflow-x-auto">
+                    <div id="table-container">
+                        </div>
+                </div>
+            </div>
+
+            <hr class="border-gray-100 mb-6">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <div class="relative bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">1. Selecciona la Función (1 pto)</label>
+                    <select id="answer-function" onchange="lockAndCheckFunction()" class="block w-full border-gray-300 rounded border p-3 bg-white focus:ring-green-500 outline-none transition disabled:bg-gray-100 disabled:text-gray-500">
+                        <option value="">-- Elige una función --</option>
+                        <option value="SUMA">SUMA</option>
+                        <option value="PROMEDIO">PROMEDIO</option>
+                        <option value="CONTAR">CONTAR</option>
+                        <option value="MAX">MAX</option>
+                        <option value="MIN">MIN</option>
+                        <option value="SI">SI</option>
+                        <option value="BUSCARV">BUSCARV</option>
+                        <option value="CONCATENAR">CONCATENAR</option>
+                        <option value="CONTARA">CONTARA</option>
+                        <option value="AHORA">AHORA</option>
+                    </select>
+                    
+                    <div id="feedback-step1" class="mt-2 hidden">
+                        </div>
+                </div>
+
+                <div id="step2-container" class="opacity-30 pointer-events-none transition-opacity duration-300 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">2. Escribe la Fórmula (2 ptos)</label>
+                    
+                    <div class="flex items-center gap-2">
+                        <div class="relative flex-1">
+                            <span class="absolute left-3 top-3 text-gray-400 font-mono select-none">=</span>
+                            <input type="text" id="answer-syntax" oninput="checkSyntaxLive()" class="pl-6 block w-full rounded border-gray-300 border p-3 font-mono text-lg uppercase outline-none focus:border-green-500" placeholder="FUNCION(RANGO)" autocomplete="off">
+                        </div>
+                        <div id="mood-face" class="face-reaction face-neutral w-12 text-center">._.</div>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2">No importa mayúsculas o minúsculas.</p>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-end">
+                <button id="btn-next" onclick="nextQuestion()" class="bg-gray-900 hover:bg-gray-800 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition transform hover:scale-105 flex items-center">
+                    Siguiente <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+
+        </div>
+
+        <div id="view-result" class="hidden p-8 text-center">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">¡Examen Terminado!</h2>
+            
+            <div class="bg-white rounded-xl p-8 border border-gray-200 shadow-md mb-6 inline-block w-full max-w-sm relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-green-400 to-blue-500"></div>
+                <p class="text-sm text-gray-500 uppercase font-semibold">Puntaje Final</p>
+                <p id="final-score-display" class="text-7xl font-bold text-gray-800 my-4">0</p>
+                <p class="text-gray-400 font-medium">de 30 posibles</p>
+            </div>
+            
+            <div id="api-status" class="mt-4 text-gray-600 animate-pulse">
+                <i class="fas fa-satellite-dish"></i> Conectando con la base de datos...
+            </div>
+            
+            <button onclick="location.reload()" class="mt-8 text-gray-500 underline hover:text-gray-800 text-sm">Realizar nueva prueba</button>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURACIÓN ---
+        // Tu URL de Apps Script (última versión que me diste)
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwBzglwOSHImMRVsol06LHjAxUzn9dBloFLcOx1vqMpbjqA7huCdy_Epnn2Tizuhhoy/exec";
+
+        // --- DATOS ---
+        const scenariosPool = [
+            { 
+                text: "Calculate the total sales for the Q1 period.", 
+                func: "SUMA", 
+                correctSyntax: "SUMA(B2:B4)", 
+                cols: ["A", "B"], headers: ["Month", "Sales"], 
+                rows: [["Jan", "500"], ["Feb", "300"], ["Mar", "200"]],
+                hint: "=SUMA(rango)"
+            },
+            { 
+                text: "Find the average grade of the students.", 
+                func: "PROMEDIO", 
+                correctSyntax: "PROMEDIO(C2:C4)", 
+                cols: ["A", "B", "C"], headers: ["ID", "Name", "Grade"], 
+                rows: [["1", "Ana", "8.5"], ["2", "Bob", "9.0"], ["3", "Cid", "7.0"]],
+                hint: "=PROMEDIO(rango)"
+            },
+            { 
+                text: "Find the highest score in the game.", 
+                func: "MAX", 
+                correctSyntax: "MAX(B2:B5)", 
+                cols: ["A", "B"], headers: ["Player", "Score"], 
+                rows: [["P1", "1500"], ["P2", "3200"], ["P3", "1100"], ["P4", "2800"]],
+                hint: "=MAX(rango)"
+            },
+            { 
+                text: "If spend > 1000, show 'OVER', otherwise 'OK'.", 
+                func: "SI", 
+                correctSyntax: "SI(B2>1000,\"OVER\",\"OK\")", 
+                cols: ["A", "B"], headers: ["Dept", "Spend"], 
+                rows: [["HR", "1200"], ["IT", "800"]],
+                hint: "=SI(logica, \"VALOR1\", \"VALOR2\")"
+            },
+            { 
+                text: "Count how many students are present (marked 'Yes').", 
+                func: "CONTARA", 
+                correctSyntax: "CONTARA(C2:C5)", 
+                cols: ["A", "B", "C"], headers: ["ID", "Name", "Present"], 
+                rows: [["1", "Luis", "Yes"], ["2", "Fer", ""], ["3", "Sol", "Yes"], ["4", "Dan", "Yes"]],
+                hint: "=CONTARA(rango)"
+            },
+            { 
+                text: "Join the First and Last name in one cell.", 
+                func: "CONCATENAR", 
+                correctSyntax: "CONCATENAR(A2,B2)", 
+                cols: ["A", "B"], headers: ["First", "Last"], 
+                rows: [["Juan", "Pérez"], ["Maria", "Gómez"]],
+                hint: "=CONCATENAR(celda1, celda2)"
+            },
+            { 
+                text: "Find the price of 'Apple' using the ID.", 
+                func: "BUSCARV", 
+                correctSyntax: "BUSCARV(D2,A2:B5,2,0)", 
+                cols: ["A", "B", "C", "D"], headers: ["Item", "Price", "", "Search"], 
+                rows: [["Apple", "$1"], ["Pear", "$2"], ["", "Apple"]],
+                hint: "=BUSCARV(valor, rango, col, 0)"
+            },
+            { 
+                text: "Show current time automatically.", 
+                func: "AHORA", 
+                correctSyntax: "AHORA()", 
+                cols: ["A"], headers: ["Time"], 
+                rows: [["(Clock)"]],
+                hint: "=AHORA()"
+            },
+            { 
+                text: "Count only the numeric entries.", 
+                func: "CONTAR", 
+                correctSyntax: "CONTAR(A2:A5)", 
+                cols: ["A"], headers: ["Data"], 
+                rows: [["100"], ["Text"], ["200"], ["300"]],
+                hint: "=CONTAR(rango_numerico)"
+            },
+            { 
+                text: "Find the lowest temperature.", 
+                func: "MIN", 
+                correctSyntax: "MIN(B2:B6)", 
+                cols: ["A", "B"], headers: ["Day", "Temp"], 
+                rows: [["Mon", "15"], ["Tue", "12"], ["Wed", "18"], ["Thu", "10"], ["Fri", "14"]],
+                hint: "=MIN(rango)"
+            }
+        ];
+
+        let userData = {};
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let totalScore = 0;
+        let questionPoints = 0; 
+        let confettiTriggered = false; // Flag para no disparar múltiple confeti
+
+        function startQuiz() {
+            const name = document.getElementById('input-name').value;
+            const group = document.getElementById('input-group').value;
+            const grade = document.getElementById('input-grade').value;
+
+            if(!name || !group) { alert("Faltan datos"); return; }
+
+            userData = { name, group, grade };
+            
+            // Duplicamos y mezclamos
+            let pool = [...scenariosPool, ...scenariosPool]; 
+            currentQuestions = pool.sort(() => 0.5 - Math.random()).slice(0, 10);
+
+            document.getElementById('view-register').classList.add('hidden');
+            document.getElementById('view-quiz').classList.remove('hidden');
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (currentIndex >= currentQuestions.length) {
+                endQuiz();
+                return;
+            }
+
+            const q = currentQuestions[currentIndex];
+            questionPoints = 0; 
+            confettiTriggered = false;
+
+            // UI Textos
+            document.getElementById('question-scenario').innerText = q.text;
+            document.getElementById('question-counter').innerText = `${currentIndex + 1}/10`;
+            document.getElementById('live-score').innerText = `${totalScore} / 30`;
+
+            // UI Reset
+            renderTable(q);
+            const select = document.getElementById('answer-function');
+            select.value = "";
+            select.disabled = false;
+            
+            const inputSyntax = document.getElementById('answer-syntax');
+            inputSyntax.value = "";
+            inputSyntax.classList.remove('border-green-500', 'bg-green-50');
+
+            document.getElementById('step2-container').classList.add('opacity-30', 'pointer-events-none');
+            document.getElementById('step2-container').classList.remove('opacity-100', 'pointer-events-auto');
+
+            document.getElementById('feedback-step1').classList.add('hidden');
+            document.getElementById('mood-face').innerHTML = "._.";
+            document.getElementById('mood-face').className = "face-reaction face-neutral";
+            
+            document.getElementById('progress-bar').style.width = `${(currentIndex / 10) * 100}%`;
+        }
+
+        function renderTable(q) {
+            let html = `<table class="excel-table"><thead><tr><th class="excel-header-col"></th>`;
+            q.cols.forEach(col => html += `<th>${col}</th>`);
+            html += `</tr></thead><tbody>`;
+            
+            let hRendered = false;
+            q.rows.forEach((row, i) => {
+                if (!hRendered) {
+                    html += `<tr><td class="excel-header-col">1</td>`;
+                    q.headers.forEach(h => html += `<td class="font-bold bg-gray-50">${h}</td>`);
+                    html += `</tr>`;
+                    hRendered = true;
+                }
+                html += `<tr><td class="excel-header-col">${i + 2}</td>`;
+                row.forEach(cell => html += `<td>${cell}</td>`);
+                html += `</tr>`;
+            });
+            html += `</tbody></table>`;
+            document.getElementById('table-container').innerHTML = html;
+        }
+
+        function lockAndCheckFunction() {
+            const select = document.getElementById('answer-function');
+            const val = select.value;
+            const q = currentQuestions[currentIndex];
+            const feedback = document.getElementById('feedback-step1');
+            const step2 = document.getElementById('step2-container');
+
+            if (!val) return;
+
+            select.disabled = true;
+
+            if (val === q.func) {
+                questionPoints += 1;
+                feedback.innerHTML = `<span class="text-green-600 font-bold"><i class="fas fa-check-circle"></i> ¡Correcto! (+1 pto)</span>`;
+            } else {
+                feedback.innerHTML = `<span class="text-red-500 text-sm"><i class="fas fa-times-circle"></i> Incorrecto. Era <b>${q.func}</b>.<br>Sintaxis: <span class="font-mono bg-gray-200 px-1 rounded">${q.hint}</span></span>`;
+            }
+            feedback.classList.remove('hidden');
+
+            step2.classList.remove('opacity-30', 'pointer-events-none');
+            step2.classList.add('opacity-100', 'pointer-events-auto');
+            document.getElementById('answer-syntax').focus();
+        }
+
+        function checkSyntaxLive() {
+            const input = document.getElementById('answer-syntax');
+            const val = input.value.toUpperCase().replace(/\s/g, ''); 
+            const q = currentQuestions[currentIndex];
+            const expected = q.correctSyntax.toUpperCase().replace(/\s/g, ''); 
+            const face = document.getElementById('mood-face');
+
+            if (val.length === 0) {
+                face.innerHTML = "._."; face.className = "face-reaction face-neutral";
+            } else if (expected.startsWith(val)) {
+                face.innerHTML = "🙂"; face.className = "face-reaction face-happy";
+            } else {
+                face.innerHTML = "😟"; face.className = "face-reaction face-sad";
+            }
+
+            if (val === expected) {
+                face.innerHTML = "🤩"; 
+                face.className = "face-reaction face-super-happy";
+                input.classList.add('border-green-500', 'bg-green-50');
+                
+                // DISPARAR CONFETTI PARCIAL (Si acierta pregunta)
+                if (!confettiTriggered) {
+                    confetti({
+                        particleCount: 100,
+                        spread: 70,
+                        origin: { y: 0.6 }
+                    });
+                    confettiTriggered = true;
+                }
+
+            } else {
+                input.classList.remove('border-green-500', 'bg-green-50');
+            }
+        }
+
+        function nextQuestion() {
+            const input = document.getElementById('answer-syntax');
+            const val = input.value.toUpperCase().replace(/\s/g, '');
+            const q = currentQuestions[currentIndex];
+            const expected = q.correctSyntax.toUpperCase().replace(/\s/g, '');
+
+            if (val === expected) {
+                questionPoints += 2; 
+            }
+
+            totalScore += questionPoints;
+            currentIndex++;
+            loadQuestion();
+        }
+
+        function endQuiz() {
+            document.getElementById('view-quiz').classList.add('hidden');
+            document.getElementById('view-result').classList.remove('hidden');
+            
+            document.getElementById('final-score-display').innerText = totalScore;
+            
+            const data = {
+                nombre: userData.name,
+                grado: userData.grade,
+                grupo: userData.group,
+                score: totalScore + "/30"
+            };
+
+            // IMPORTANTE: 'no-cors' y 'text/plain' para evitar el bloqueo del navegador
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 
+                    'Content-Type': 'text/plain;charset=utf-8', 
+                },
+                body: JSON.stringify(data)
+            })
+            .then(() => {
+                document.getElementById('api-status').innerHTML = '<span class="text-green-600 font-bold text-lg"><i class="fas fa-check-circle"></i> Resultados Guardados</span>';
+                launchFinalConfetti();
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('api-status').innerHTML = '<span class="text-red-500">Error guardando. Toma captura de pantalla.</span>';
+            });
+        }
+
+        // --- FUNCIÓN DE CONFETTI FINAL RESTAURADA ---
+        function launchFinalConfetti() {
+            var duration = 3000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            var random = function(min, max) { return Math.random() * (max - min) + min; };
+
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                var particleCount = 50 * (timeLeft / duration);
+                
+                // Dispara desde la izquierda y derecha
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: random(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: random(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+    </script>
+</body>
+</html>
