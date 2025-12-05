@@ -1,155 +1,414 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Examen de Biología V2</title>
-    
+    <title>Examen de Biología</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    
+
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
         @keyframes fall {
-          0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
-          100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
         }
-        .confetti { position: absolute; width: 10px; height: 10px; animation: fall 3s linear forwards; }
-        .sparkle-container { position: absolute; inset: 0; pointer-events: none; }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            animation: fall 3s linear forwards;
+        }
+
+        .sparkle-container {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
         @media print {
-          body * { visibility: hidden; }
-          #root, #root * { visibility: visible; }
-          header, button, .print\:hidden { display: none !important; }
-          main { width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
-          .bg-white { box-shadow: none !important; }
+            body * {
+                visibility: hidden;
+            }
+
+            #root,
+            #root * {
+                visibility: visible;
+            }
+
+            header,
+            button,
+            .print\:hidden {
+                display: none !important;
+            }
+
+            main {
+                width: 100% !important;
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            .bg-white {
+                box-shadow: none !important;
+                border: none !important;
+            }
+
+            .print-full-width {
+                width: 100% !important;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-100">
+
+<body class="bg-green-50">
 
     <div id="root"></div>
 
     <script type="text/babel">
-        // Extraemos Hooks de la variable global React
         const { useState, useEffect } = React;
 
-        // --- ICONOS SIMULADOS (Reemplazo de lucide-react) ---
-        const BookOpen = () => <span className="mr-2 text-2xl">📖</span>;
-        const Calendar = () => <span>📅</span>;
-        const ArrowRight = ({className}) => <span className={`mx-2 ${className}`}>➡️</span>;
+        // --- ICONOS ---
+        const BookOpen = () => <span className="text-4xl">📖</span>;
+        const ArrowRight = ({ className }) => <span className={`mx-2 ${className}`}>➡️</span>;
         const AlertCircle = () => <span className="mr-2">⚠️</span>;
-        const Loader2 = ({className}) => <span className={`mr-2 ${className}`}>⏳</span>;
-        const Frown = ({size, className}) => <div style={{fontSize: size}} className={className}>😢</div>;
-        const PartyPopper = ({size, className}) => <div style={{fontSize: size}} className={className}>🎉</div>;
+        const Loader2 = ({ className }) => <span className={`mr-2 ${className}`}>⏳</span>;
+        const Frown = ({ size, className }) => <div style={{ fontSize: size }} className={className}>😢</div>;
+        const PartyPopper = ({ size, className }) => <div style={{ fontSize: size }} className={className}>🎉</div>;
         const Printer = () => <span className="mr-2">🖨️</span>;
         const Activity = () => <span>📊</span>;
         const CheckCircle = () => <span className="mr-2">✅</span>;
         const HelpCircle = () => <span className="mr-2">❓</span>;
 
-        // --- CONFIGURACIÓN Y DATOS ---
-        // URL DE TU API DE GOOGLE APPS SCRIPT (ACTUALIZADA)
-        const API_URL = "https://script.google.com/macros/s/AKfycbzEm8aQmZNgE_hW_58sh8_DaxrcHy5E1JCL24FEq7CZLhH5mzNgbiB4ha5rW7sgG7je/exec";
+        // --- CONFIGURACIÓN ---
+        const API_URL = "https://script.google.com/macros/s/AKfycbzz7ZZBSNaJSMPmKif30pBcj6Uyrt3fJl7RbSs_S3VtTs1FMK1Pjjit1-HC37oMyv-W/exec";
 
-        // 1. BANCO DE PREGUNTAS
-        const QUESTION_POOL = [
-            { id: 1, q: "What is Taxonomy?", options: ["The study of stars and planets.", "The science of naming and classifying organisms.", "The process of fossils turning into rocks.", "The study of how animals breathe."], ans: 1 },
-            { id: 2, q: "Which of the following is NOT one of the Three Domains of life?", options: ["Bacteria", "Archaea", "Eukarya", "Animalia"], ans: 3 },
-            { id: 3, q: "Humans, dogs, and trees belong to which Domain?", options: ["Bacteria", "Archaea", "Eukarya", "Prokaryarya"], ans: 2 },
-            { id: 4, q: "How many Kingdoms are typically used in the modern classification system?", options: ["3", "4", "6", "10"], ans: 2 },
-            { id: 5, q: "Which Kingdom includes organisms like mushrooms and mold?", options: ["Plantae", "Fungi", "Animalia", "Protista"], ans: 1 },
-            { id: 6, q: "Organisms that can make their own food using sunlight are called:", options: ["Heterotrophs", "Autotrophs", "Decomposers", "Herbivores"], ans: 1 },
-            { id: 7, q: "An organism that must eat other organisms to get energy is called a:", options: ["Heterotroph", "Autotroph", "Producer", "Plant"], ans: 0 },
-            { id: 8, q: "What do we call an organism made of only one cell?", options: ["Multicellular", "Bicellular", "Unicellular", "Tricellular"], ans: 2 },
-            { id: 9, q: "Animals like cats, eagles, and humans are:", options: ["Unicellular", "Multicellular", "Non-cellular", "Prokaryotic"], ans: 1 },
-            { id: 10, q: "Which Phylum includes animals with a backbone (like fish, birds, and mammals)?", options: ["Arthropoda", "Mollusca", "Chordata", "Cnidaria"], ans: 2 },
-            { id: 11, q: "Spiders, insects, and crabs belong to which Phylum?", options: ["Chordata", "Arthropoda", "Porifera", "Annelida"], ans: 1 },
-            { id: 12, q: "What type of symmetry does a human or a butterfly have?", options: ["Radial symmetry", "Bilateral symmetry", "Asymmetry", "Spherical symmetry"], ans: 1 },
-            { id: 13, q: "What type of symmetry does a jellyfish or a starfish usually have?", options: ["Radial symmetry", "Bilateral symmetry", "Asymmetry", "Square symmetry"], ans: 0 },
-            { id: 14, q: "Sexual reproduction involves:", options: ["One parent and identical offspring.", "Two parents and genetic material from both.", "No parents.", "Cloning oneself."], ans: 1 },
-            { id: 15, q: "Asexual reproduction results in offspring that are:", options: ["Genetically identical to the parent.", "Completely different from the parent.", "A mix of two parents.", "Larger than the parent."], ans: 0 },
-            { id: 16, q: "Which is a key force in evolution where organisms better adapted to their environment survive?", options: ["Artificial selection", "Natural selection", "Genetic drift", "Classification"], ans: 1 },
-            { id: 17, q: "A bat's wing and a human's arm have similar bone structures but different functions. These are called:", options: ["Analogous structures", "Homologous structures", "Vestigial structures", "Random structures"], ans: 1 },
-            { id: 18, q: "A bird''s wing and a butterfly's wing do the same job (flying) but are built very differently. These are called:", options: ["Analogous structures", "Homologous structures", "Identical structures", "Related structures"], ans: 0 },
-            { id: 19, q: "Which Kingdom contains microscopic organisms like the flu or strep throat bacteria?", options: ["Eubacteria", "Plantae", "Animalia", "Fungi"], ans: 0 },
-            { id: 20, q: "Which classification level is the most specific (contains only one type of organism)?", options: ["Kingdom", "Class", "Order", "Species"], ans: 3 }
+        // --- TRADUCCIONES ---
+        const TEXTS = {
+            en: {
+                title: "Biology Exam",
+                access: "Exam Access",
+                codePlaceholder: "CODE",
+                enter: "Enter",
+                verifying: "Verifying...",
+                studentData: "Student Data",
+                name: "Name(s)",
+                paternal: "Paternal Surname",
+                maternal: "Maternal Surname",
+                grade: "Grade",
+                group: "Group",
+                start: "Start Exam",
+                points: "Points",
+                question: "Question",
+                of: "of",
+                cladogramTitle: "Order the Cladogram",
+                cladogramDesc: "Order the organisms from simplest (left/top) to most complex (right/bottom).",
+                charTable: "Character Table (Reference)",
+                organism: "Organism",
+                orderHere: "Order here:",
+                submitDiagram: "Submit Diagram",
+                matchingTitle: "Match Concepts",
+                selectAnswer: "Select answer...",
+                submitMatching: "Submit Matches",
+                dragTitle: "Classify Symmetry",
+                dragDesc: "Drag the image to the correct box.",
+                allClassified: "All classified!",
+                dropHere: "Drop here",
+                finish: "Finish Exam",
+                results: "Final Results",
+                finalGrade: "Final Grade",
+                saving: "Saving to database...",
+                saved: "Saved Successfully!",
+                areasOfOpp: "Areas of Opportunity",
+                yourAns: "Your answer",
+                correct: "Correct",
+                print: "Print Results (PDF)",
+                excellent: "Excellent work! No errors.",
+                errorEmpty: "Please complete your name and surnames.",
+                errorClado: "Please drag all images.",
+                errorMatch: "Please match all terms.",
+                errorDrag: "Please drag all images to their place.",
+                asymmetry: "Asymmetry",
+                radial: "Radial Symmetry",
+                bilateral: "Bilateral Symmetry"
+            },
+            es: {
+                title: "Examen de Biología",
+                access: "Acceso al Examen",
+                codePlaceholder: "CÓDIGO",
+                enter: "Ingresar",
+                verifying: "Verificando...",
+                studentData: "Datos del Alumno",
+                name: "Nombre(s)",
+                paternal: "Apellido Paterno",
+                maternal: "Apellido Materno",
+                grade: "Grado",
+                group: "Grupo",
+                start: "Comenzar Examen",
+                points: "Puntos",
+                question: "Pregunta",
+                of: "de",
+                cladogramTitle: "Ordena el Cladograma",
+                cladogramDesc: "Ordena los organismos del más simple (izquierda/arriba) al más complejo (derecha/abajo).",
+                charTable: "Tabla de Caracteres (Referencia)",
+                organism: "Organismo",
+                orderHere: "Ordena aquí:",
+                submitDiagram: "Enviar Diagrama",
+                matchingTitle: "Relaciona Conceptos",
+                selectAnswer: "Selecciona respuesta...",
+                submitMatching: "Enviar Relaciones",
+                dragTitle: "Clasifica la Simetría",
+                dragDesc: "Arrastra la imagen a la casilla correcta.",
+                allClassified: "¡Todas clasificadas!",
+                dropHere: "Suelta aquí",
+                finish: "Finalizar Examen",
+                results: "Resultados Finales",
+                finalGrade: "Calificación Final",
+                saving: "Guardando en base de datos...",
+                saved: "¡Guardado Exitosamente!",
+                areasOfOpp: "Áreas de Oportunidad",
+                yourAns: "Tu respuesta",
+                correct: "Correcta",
+                print: "Imprimir Resultados (PDF)",
+                excellent: "¡Excelente trabajo! Sin errores.",
+                errorEmpty: "Por favor completa tu nombre y apellidos.",
+                errorClado: "Por favor ordena todos los elementos.",
+                errorMatch: "Por favor relaciona todos los términos.",
+                errorDrag: "Por favor arrastra todas las imágenes a su lugar.",
+                asymmetry: "Asimetría",
+                radial: "Simetría Radial",
+                bilateral: "Simetría Bilateral"
+            }
+        };
+
+        // 1. BANCO DE PREGUNTAS (20 Total) - Multilenguaje
+        const FULL_QUESTION_POOL = [
+            {
+                id: 1,
+                q: { en: "What is Taxonomy?", es: "¿Qué es la Taxonomía?" },
+                options: { en: ["The study of stars and planets.", "The science of naming and classifying organisms.", "The process of fossils turning into rocks.", "The study of how animals breathe."], es: ["El estudio de estrellas y planetas.", "La ciencia de nombrar y clasificar organismos.", "El proceso de fósiles convirtiéndose en rocas.", "El estudio de cómo respiran los animales."] },
+                ans: 1
+            },
+            {
+                id: 2,
+                q: { en: "Which of the following is NOT one of the Three Domains of life?", es: "¿Cuál de los siguientes NO es uno de los Tres Dominios de la vida?" },
+                options: { en: ["Bacteria", "Archaea", "Eukarya", "Animalia"], es: ["Bacteria", "Archaea", "Eukarya", "Animalia"] },
+                ans: 3
+            },
+            {
+                id: 3,
+                q: { en: "Humans, dogs, and trees belong to which Domain?", es: "¿Los humanos, perros y árboles pertenecen a qué Dominio?" },
+                options: { en: ["Bacteria", "Archaea", "Eukarya", "Prokaryarya"], es: ["Bacteria", "Archaea", "Eukarya", "Prokaryarya"] },
+                ans: 2
+            },
+            {
+                id: 4,
+                q: { en: "How many Kingdoms are typically used in the modern classification system?", es: "¿Cuántos Reinos se usan típicamente en el sistema de clasificación moderno?" },
+                options: { en: ["3", "4", "6", "10"], es: ["3", "4", "6", "10"] },
+                ans: 2
+            },
+            {
+                id: 5,
+                q: { en: "Which Kingdom includes organisms like mushrooms and mold?", es: "¿Qué Reino incluye organismos como hongos y moho?" },
+                options: { en: ["Plantae", "Fungi", "Animalia", "Protista"], es: ["Plantae", "Fungi", "Animalia", "Protista"] },
+                ans: 1
+            },
+            {
+                id: 6,
+                q: { en: "Organisms that can make their own food using sunlight are called:", es: "Los organismos que pueden fabricar su propio alimento usando luz solar se llaman:" },
+                options: { en: ["Heterotrophs", "Autotrophs", "Decomposers", "Herbivores"], es: ["Heterótrofos", "Autótrofos", "Descomponedores", "Herbívoros"] },
+                ans: 1
+            },
+            {
+                id: 7,
+                q: { en: "An organism that must eat other organisms to get energy is called a:", es: "Un organismo que debe comer otros organismos para obtener energía se llama:" },
+                options: { en: ["Heterotroph", "Autotroph", "Producer", "Plant"], es: ["Heterótrofo", "Autótrofo", "Productor", "Planta"] },
+                ans: 0
+            },
+            {
+                id: 8,
+                q: { en: "What do we call an organism made of only one cell?", es: "¿Cómo llamamos a un organismo hecho de una sola célula?" },
+                options: { en: ["Multicellular", "Bicellular", "Unicellular", "Tricellular"], es: ["Multicelular", "Bicelular", "Unicelular", "Tricelular"] },
+                ans: 2
+            },
+            {
+                id: 9,
+                q: { en: "Animals like cats, eagles, and humans are:", es: "Animales como gatos, águilas y humanos son:" },
+                options: { en: ["Unicellular", "Multicellular", "Non-cellular", "Prokaryotic"], es: ["Unicelulares", "Multicelulares", "No-celulares", "Procariotas"] },
+                ans: 1
+            },
+            {
+                id: 10,
+                q: { en: "Which Phylum includes animals with a backbone (like fish, birds, and mammals)?", es: "¿Qué Filo incluye animales con columna vertebral (como peces, aves y mamíferos)?" },
+                options: { en: ["Arthropoda", "Mollusca", "Chordata", "Cnidaria"], es: ["Arthropoda", "Mollusca", "Chordata", "Cnidaria"] },
+                ans: 2
+            },
+            {
+                id: 11,
+                q: { en: "Spiders, insects, and crabs belong to which Phylum?", es: "¿Las arañas, insectos y cangrejos pertenecen a qué Filo?" },
+                options: { en: ["Chordata", "Arthropoda", "Porifera", "Annelida"], es: ["Chordata", "Arthropoda", "Porifera", "Annelida"] },
+                ans: 1
+            },
+            {
+                id: 12,
+                q: { en: "What type of symmetry does a human or a butterfly have?", es: "¿Qué tipo de simetría tiene un humano o una mariposa?" },
+                options: { en: ["Radial symmetry", "Bilateral symmetry", "Asymmetry", "Spherical symmetry"], es: ["Simetría radial", "Simetría bilateral", "Asimetría", "Simetría esférica"] },
+                ans: 1
+            },
+            {
+                id: 13,
+                q: { en: "What type of symmetry does a jellyfish or a starfish usually have?", es: "¿Qué tipo de simetría suele tener una medusa o una estrella de mar?" },
+                options: { en: ["Radial symmetry", "Bilateral symmetry", "Asymmetry", "Square symmetry"], es: ["Simetría radial", "Simetría bilateral", "Asimetría", "Simetría cuadrada"] },
+                ans: 0
+            },
+            {
+                id: 14,
+                q: { en: "Sexual reproduction involves:", es: "La reproducción sexual involucra:" },
+                options: { en: ["One parent and identical offspring.", "Two parents and genetic material from both.", "No parents.", "Cloning oneself."], es: ["Un padre y descendencia idéntica.", "Dos padres y material genético de ambos.", "Sin padres.", "Clonarse a sí mismo."] },
+                ans: 1
+            },
+            {
+                id: 15,
+                q: { en: "Asexual reproduction results in offspring that are:", es: "La reproducción asexual resulta en descendencia que es:" },
+                options: { en: ["Genetically identical to the parent.", "Completely different from the parent.", "A mix of two parents.", "Larger than the parent."], es: ["Genéticamente idéntica al padre.", "Completamente diferente al padre.", "Una mezcla de dos padres.", "Más grande que el padre."] },
+                ans: 0
+            },
+            {
+                id: 16,
+                q: { en: "Which is a key force in evolution where organisms better adapted to their environment survive?", es: "¿Cuál es una fuerza clave en la evolución donde los organismos mejor adaptados sobreviven?" },
+                options: { en: ["Artificial selection", "Natural selection", "Genetic drift", "Classification"], es: ["Selección artificial", "Selección natural", "Deriva genética", "Clasificación"] },
+                ans: 1
+            },
+            {
+                id: 17,
+                q: { en: "A bat's wing and a human's arm have similar bone structures but different functions. These are called:", es: "El ala de un murciélago y el brazo de un humano tienen estructuras óseas similares pero funciones diferentes. Se llaman:" },
+                options: { en: ["Analogous structures", "Homologous structures", "Vestigial structures", "Random structures"], es: ["Estructuras análogas", "Estructuras homólogas", "Estructuras vestigiales", "Estructuras aleatorias"] },
+                ans: 1
+            },
+            {
+                id: 18,
+                q: { en: "A bird's wing and a butterfly's wing do the same job (flying) but are built very differently. These are called:", es: "El ala de un pájaro y el ala de una mariposa hacen el mismo trabajo (volar) pero están construidas de manera muy diferente. Se llaman:" },
+                options: { en: ["Analogous structures", "Homologous structures", "Identical structures", "Related structures"], es: ["Estructuras análogas", "Estructuras homólogas", "Estructuras idénticas", "Estructuras relacionadas"] },
+                ans: 0
+            },
+            {
+                id: 19,
+                q: { en: "Which Kingdom contains microscopic organisms like the flu or strep throat bacteria?", es: "¿Qué Reino contiene organismos microscópicos como la gripe o la bacteria de la faringitis?" },
+                options: { en: ["Eubacteria", "Plantae", "Animalia", "Fungi"], es: ["Eubacteria", "Plantae", "Animalia", "Fungi"] },
+                ans: 0
+            },
+            {
+                id: 20,
+                q: { en: "Which classification level is the most specific (contains only one type of organism)?", es: "¿Qué nivel de clasificación es el más específico (contiene solo un tipo de organismo)?" },
+                options: { en: ["Kingdom", "Class", "Order", "Species"], es: ["Reino", "Clase", "Orden", "Especie"] },
+                ans: 3
+            }
         ];
 
         // 2. BANCO DE CLADOGRAMAS
         const CLADOGRAM_POOLS = [
             {
-                title: "Vertebrate Evolution",
-                items: ["Lancelet", "Lamprey", "Shark", "Salamander", "Lizard", "Tiger"],
+                title: { en: "Vertebrate Evolution", es: "Evolución de Vertebrados" },
+                items: { en: ["Lancelet", "Lamprey", "Shark", "Salamander", "Lizard", "Tiger"], es: ["Anfioxo", "Lamprea", "Tiburón", "Salamandra", "Lagarto", "Tigre"] },
                 matrix: [
-                    { name: "Lancelet",   t1: 0, t2: 0, t3: 0, t4: 0, t5: 0 },
-                    { name: "Lamprey",    t1: 1, t2: 0, t3: 0, t4: 0, t5: 0 },
-                    { name: "Shark",      t1: 1, t2: 1, t3: 0, t4: 0, t5: 0 },
-                    { name: "Salamander", t1: 1, t2: 1, t3: 1, t4: 0, t5: 0 },
-                    { name: "Lizard",     t1: 1, t2: 1, t3: 1, t4: 1, t5: 0 },
-                    { name: "Tiger",      t1: 1, t2: 1, t3: 1, t4: 1, t5: 1 },
+                    { name: { en: "Lancelet", es: "Anfioxo" }, t1: 0, t2: 0, t3: 0, t4: 0, t5: 0 },
+                    { name: { en: "Lamprey", es: "Lamprea" }, t1: 1, t2: 0, t3: 0, t4: 0, t5: 0 },
+                    { name: { en: "Shark", es: "Tiburón" }, t1: 1, t2: 1, t3: 0, t4: 0, t5: 0 },
+                    { name: { en: "Salamander", es: "Salamandra" }, t1: 1, t2: 1, t3: 1, t4: 0, t5: 0 },
+                    { name: { en: "Lizard", es: "Lagarto" }, t1: 1, t2: 1, t3: 1, t4: 1, t5: 0 },
+                    { name: { en: "Tiger", es: "Tigre" }, t1: 1, t2: 1, t3: 1, t4: 1, t5: 1 },
                 ],
-                traits: ["Vertebrae", "Jaws", "Lungs", "Dry Skin", "Hair"]
+                traits: { en: ["Vertebrae", "Jaws", "Lungs", "Dry Skin", "Hair"], es: ["Vértebras", "Mandíbulas", "Pulmones", "Piel Seca", "Pelo"] }
             },
             {
-                title: "Plant Kingdom Complexity",
-                items: ["Algae", "Moss", "Fern", "Pine Tree", "Rose Bush", "Apple Tree"],
+                title: { en: "Plant Kingdom Complexity", es: "Complejidad del Reino Plantae" },
+                items: { en: ["Algae", "Moss", "Fern", "Pine Tree", "Rose Bush", "Apple Tree"], es: ["Algas", "Musgo", "Helecho", "Pino", "Rosal", "Manzano"] },
                 matrix: [
-                    { name: "Algae",      t1: 0, t2: 0, t3: 0, t4: 0, t5: 0 },
-                    { name: "Moss",       t1: 1, t2: 0, t3: 0, t4: 0, t5: 0 },
-                    { name: "Fern",       t1: 1, t2: 1, t3: 0, t4: 0, t5: 0 },
-                    { name: "Pine Tree",  t1: 1, t2: 1, t3: 1, t4: 0, t5: 0 },
-                    { name: "Rose Bush",  t1: 1, t2: 1, t3: 1, t4: 1, t5: 0 },
-                    { name: "Apple Tree", t1: 1, t2: 1, t3: 1, t4: 1, t5: 1 },
+                    { name: { en: "Algae", es: "Algas" }, t1: 0, t2: 0, t3: 0, t4: 0, t5: 0 },
+                    { name: { en: "Moss", es: "Musgo" }, t1: 1, t2: 0, t3: 0, t4: 0, t5: 0 },
+                    { name: { en: "Fern", es: "Helecho" }, t1: 1, t2: 1, t3: 0, t4: 0, t5: 0 },
+                    { name: { en: "Pine Tree", es: "Pino" }, t1: 1, t2: 1, t3: 1, t4: 0, t5: 0 },
+                    { name: { en: "Rose Bush", es: "Rosal" }, t1: 1, t2: 1, t3: 1, t4: 1, t5: 0 },
+                    { name: { en: "Apple Tree", es: "Manzano" }, t1: 1, t2: 1, t3: 1, t4: 1, t5: 1 },
                 ],
-                traits: ["Multicellular", "Vascular Tissue", "Seeds", "Flowers", "Fruits"]
+                traits: { en: ["Multicellular", "Vascular Tissue", "Seeds", "Flowers", "Fruits"], es: ["Multicelular", "Tejido Vascular", "Semillas", "Flores", "Frutos"] }
             },
             {
-                title: "Major Animal Phyla",
-                items: ["Sponge", "Jellyfish", "Flatworm", "Roundworm", "Earthworm", "Human"],
+                title: { en: "Major Animal Phyla", es: "Principales Filos Animales" },
+                items: { en: ["Sponge", "Jellyfish", "Flatworm", "Roundworm", "Earthworm", "Human"], es: ["Esponja", "Medusa", "Gusano Plano", "Gusano Redondo", "Lombriz", "Humano"] },
                 matrix: [
-                    { name: "Sponge",     t1: 0, t2: 0, t3: 0, t4: 0, t5: 0 },
-                    { name: "Jellyfish",  t1: 1, t2: 0, t3: 0, t4: 0, t5: 0 },
-                    { name: "Flatworm",   t1: 1, t2: 1, t3: 0, t4: 0, t5: 0 },
-                    { name: "Roundworm",  t1: 1, t2: 1, t3: 1, t4: 0, t5: 0 },
-                    { name: "Earthworm",  t1: 1, t2: 1, t3: 1, t4: 1, t5: 0 },
-                    { name: "Human",      t1: 1, t2: 1, t3: 1, t4: 1, t5: 1 },
+                    { name: { en: "Sponge", es: "Esponja" }, t1: 0, t2: 0, t3: 0, t4: 0, t5: 0 },
+                    { name: { en: "Jellyfish", es: "Medusa" }, t1: 1, t2: 0, t3: 0, t4: 0, t5: 0 },
+                    { name: { en: "Flatworm", es: "Gusano Plano" }, t1: 1, t2: 1, t3: 0, t4: 0, t5: 0 },
+                    { name: { en: "Roundworm", es: "Gusano Redondo" }, t1: 1, t2: 1, t3: 1, t4: 0, t5: 0 },
+                    { name: { en: "Earthworm", es: "Lombriz" }, t1: 1, t2: 1, t3: 1, t4: 1, t5: 0 },
+                    { name: { en: "Human", es: "Humano" }, t1: 1, t2: 1, t3: 1, t4: 1, t5: 1 },
                 ],
-                traits: ["Tissues", "Bilateral Sym", "Body Cavity", "Segmented", "Backbone"]
+                traits: { en: ["Tissues", "Bilateral Sym", "Body Cavity", "Segmented", "Backbone"], es: ["Tejidos", "Sim. Bilateral", "Cavidad Corporal", "Segmentado", "Columna"] }
             }
         ];
 
         // 3. BANCO DE MATCHING
         const MATCHING_POOLS = [
             {
-                title: "Nutrition & Energy",
+                title: { en: "Nutrition & Energy", es: "Nutrición y Energía" },
                 pairs: [
-                    { def: "Produces own food using sunlight", term: "Autotrophs" },
-                    { def: "Must eat other living things", term: "Heterotrophs" },
-                    { def: "Only eats plants", term: "Herbivores" },
-                    { def: "Breaks down dead matter", term: "Decomposers" },
-                    { def: "Only eats meat", term: "Carnivores" }
+                    { def: { en: "Produces own food using sunlight", es: "Produce su propio alimento usando luz solar" }, term: { en: "Autotrophs", es: "Autótrofos" } },
+                    { def: { en: "Must eat other living things", es: "Debe comer otros seres vivos" }, term: { en: "Heterotrophs", es: "Heterótrofos" } },
+                    { def: { en: "Only eats plants", es: "Solo come plantas" }, term: { en: "Herbivores", es: "Herbívoros" } },
+                    { def: { en: "Breaks down dead matter", es: "Descompone materia muerta" }, term: { en: "Decomposers", es: "Descomponedores" } },
+                    { def: { en: "Only eats meat", es: "Solo come carne" }, term: { en: "Carnivores", es: "Carnívoros" } }
                 ]
             },
             {
-                title: "Cells & Respiration",
+                title: { en: "Cells & Respiration", es: "Células y Respiración" },
                 pairs: [
-                    { def: "Made of many cells", term: "Multicellular" },
-                    { def: "Respiration WITHOUT oxygen", term: "Anaerobic" },
-                    { def: "Made of only one single cell", term: "Unicellular" },
-                    { def: "Respiration REQUIRING oxygen", term: "Aerobic" },
-                    { def: "The basic unit of life", term: "Cell" }
+                    { def: { en: "Made of many cells", es: "Hecho de muchas células" }, term: { en: "Multicellular", es: "Multicelular" } },
+                    { def: { en: "Respiration WITHOUT oxygen", es: "Respiración SIN oxígeno" }, term: { en: "Anaerobic", es: "Anaeróbica" } },
+                    { def: { en: "Made of only one single cell", es: "Hecho de una sola célula" }, term: { en: "Unicellular", es: "Unicelular" } },
+                    { def: { en: "Respiration REQUIRING oxygen", es: "Respiración que REQUIERE oxígeno" }, term: { en: "Aerobic", es: "Aeróbica" } },
+                    { def: { en: "The basic unit of life", es: "La unidad básica de la vida" }, term: { en: "Cell", es: "Célula" } }
                 ]
             },
             {
-                title: "Body Structure & Symmetry",
+                title: { en: "Body Structure & Symmetry", es: "Estructura Corporal y Simetría" },
                 pairs: [
-                    { def: "Left and right sides are mirror images", term: "Bilateral Symmetry" },
-                    { def: "Animal WITHOUT a backbone", term: "Invertebrate" },
-                    { def: "Organized around a central point", term: "Radial Symmetry" },
-                    { def: "Animal WITH a backbone", term: "Vertebrate" },
-                    { def: "No regular body shape", term: "Asymmetry" }
+                    { def: { en: "Left and right sides are mirror images", es: "Lados izquierdo y derecho son imágenes espejo" }, term: { en: "Bilateral Symmetry", es: "Simetría Bilateral" } },
+                    { def: { en: "Animal WITHOUT a backbone", es: "Animal SIN columna vertebral" }, term: { en: "Invertebrate", es: "Invertebrado" } },
+                    { def: { en: "Organized around a central point", es: "Organizado alrededor de un punto central" }, term: { en: "Radial Symmetry", es: "Simetría Radial" } },
+                    { def: { en: "Animal WITH a backbone", es: "Animal CON columna vertebral" }, term: { en: "Vertebrate", es: "Vertebrado" } },
+                    { def: { en: "No regular body shape", es: "Sin forma corporal regular" }, term: { en: "Asymmetry", es: "Asimetría" } }
                 ]
             }
         ];
@@ -168,7 +427,7 @@
         const Sparkles = () => (
             <div className="absolute inset-0 pointer-events-none flex justify-center items-center overflow-hidden z-50">
                 <div className="sparkle-container">
-                    {[...Array(20)].map((_, i) => (
+                    {[...Array(30)].map((_, i) => (
                         <div key={i} className="confetti" style={{
                             left: `${50 + (Math.random() * 100 - 50)}%`,
                             top: `${50 + (Math.random() * 100 - 50)}%`,
@@ -182,11 +441,12 @@
 
         // --- APP PRINCIPAL ---
         function ExamenApp() {
-            const [view, setView] = useState('login'); 
+            const [view, setView] = useState('login');
             const [loading, setLoading] = useState(false);
             const [mensaje, setMensaje] = useState({ text: '', type: '' });
             const [inputCodigo, setInputCodigo] = useState('');
             const [datosAlumno, setDatosAlumno] = useState({ nombre: '', apellidoPaterno: '', apellidoMaterno: '', grado: '1', grupo: 'A' });
+            const [language, setLanguage] = useState('en'); // 'en' or 'es'
 
             // ESTADOS DEL EXAMEN
             const [examData, setExamData] = useState(null);
@@ -214,6 +474,8 @@
             const [dragSubmitted, setDragSubmitted] = useState(false);
             const [draggedItem, setDraggedItem] = useState(null);
 
+            const t = TEXTS[language];
+
             // --- CONEXIÓN ---
             const conectarConGoogle = async (datos) => {
                 try {
@@ -223,7 +485,10 @@
                     });
                     return await response.json();
                 } catch (error) {
-                    console.error(error);
+                    console.error("Error fetching:", error);
+                    if (datos.action === "verificarCodigo") {
+                        return { success: false, message: "Error de conexión con el servidor." };
+                    }
                     return { success: false, message: "Error de conexión." };
                 }
             };
@@ -231,28 +496,49 @@
             const handleLogin = async (e) => {
                 e.preventDefault();
                 setLoading(true);
+                setMensaje({ text: '', type: '' });
+
                 const res = await conectarConGoogle({ action: "verificarCodigo", codigo: inputCodigo });
+
                 if (res.success) {
+                    // Check for Spanish codes
+                    if (inputCodigo === "01D-2025" || inputCodigo === "01D-000") {
+                        setLanguage('es');
+                    } else {
+                        setLanguage('en');
+                    }
                     setView('registro');
                 } else {
-                    setMensaje({ text: res.message || "Error al verificar código", type: 'error' });
+                    setMensaje({ text: res.message || "Código inválido o fecha incorrecta", type: 'error' });
                 }
                 setLoading(false);
             };
 
             const handleRegistro = (e) => {
                 e.preventDefault();
-                if (!datosAlumno.nombre) return;
+                if (!datosAlumno.nombre || !datosAlumno.apellidoPaterno) {
+                    alert(t.errorEmpty);
+                    return;
+                }
                 prepareExam();
                 setView('examen');
             };
 
             // --- PREPARACIÓN ---
             const prepareExam = () => {
-                const shuffledQs = [...QUESTION_POOL].sort(() => 0.5 - Math.random()).slice(0, 10);
+                // 1. Randomize 10 questions from pool
+                const shuffledQs = [...FULL_QUESTION_POOL].sort(() => 0.5 - Math.random()).slice(0, 10);
+
+                // 2. Randomize Cladogram
                 const randomCladogram = CLADOGRAM_POOLS[Math.floor(Math.random() * CLADOGRAM_POOLS.length)];
-                const shuffledCladoItems = [...randomCladogram.items].sort(() => 0.5 - Math.random());
+                // Need to shuffle items based on language
+                const itemsToShuffle = randomCladogram.items[language];
+                const shuffledCladoItems = [...itemsToShuffle].sort(() => 0.5 - Math.random());
+
+                // 3. Randomize Matching
                 const randomMatching = MATCHING_POOLS[Math.floor(Math.random() * MATCHING_POOLS.length)];
+
+                // 4. Randomize Drag Items
                 const shuffledDrag = [...DRAG_ITEMS].sort(() => 0.5 - Math.random());
 
                 setExamData({
@@ -267,7 +553,7 @@
                 setCladogramItems(shuffledCladoItems);
                 setDragPool(shuffledDrag);
                 setExamPhase('mcq');
-                
+
                 setMaxScore(39);
             };
 
@@ -283,7 +569,7 @@
                     setShowFeedback('correct');
                 } else {
                     setShowFeedback('incorrect');
-                    setMistakes(prev => [...prev, { section: "Preguntas", q: currentQ.q, yourAns: currentQ.options[optIndex], correct: currentQ.options[currentQ.ans] }]);
+                    setMistakes(prev => [...prev, { section: "Preguntas", q: currentQ.q[language], yourAns: currentQ.options[language][optIndex], correct: currentQ.options[language][currentQ.ans] }]);
                 }
 
                 setTimeout(() => {
@@ -309,16 +595,16 @@
             const submitCladogram = () => {
                 setCladogramSubmitted(true);
                 let pts = 0;
-                const correctOrder = examData.cladogram.items;
+                const correctOrder = examData.cladogram.items[language];
                 let mistakesFound = false;
-                
+
                 cladogramItems.forEach((item, index) => {
                     if (item === correctOrder[index]) pts += 2;
                     else mistakesFound = true;
                 });
 
                 setScore(s => s + pts);
-                if (mistakesFound) setMistakes(prev => [...prev, { section: "Cladograma", q: examData.cladogram.title, info: `Obtuviste ${pts} puntos. Revisa la tabla de caracteres.` }]);
+                if (mistakesFound) setMistakes(prev => [...prev, { section: "Cladograma", q: examData.cladogram.title[language], info: `Obtuviste ${pts} puntos.` }]);
                 setTimeout(() => setExamPhase('matching'), 3000);
             };
 
@@ -331,14 +617,14 @@
             const submitMatching = () => {
                 const definitions = examData.matching.pairs;
                 if (Object.keys(matches).length < definitions.length) {
-                    alert("Por favor relaciona todos los términos.");
+                    alert(t.errorMatch);
                     return;
                 }
                 setMatchingSubmitted(true);
                 let pts = 0;
                 definitions.forEach((pair, idx) => {
-                    if (matches[idx] === pair.term) pts += 1;
-                    else setMistakes(prev => [...prev, { section: "Conceptos", q: pair.def, yourAns: matches[idx], correct: pair.term }]);
+                    if (matches[idx] === pair.term[language]) pts += 1;
+                    else setMistakes(prev => [...prev, { section: "Conceptos", q: pair.def[language], yourAns: matches[idx], correct: pair.term[language] }]);
                 });
                 setScore(s => s + pts);
                 setTimeout(() => setExamPhase('dragdrop'), 2000);
@@ -348,21 +634,21 @@
             const handleDragStart = (e, item) => {
                 if (dragSubmitted) return;
                 setDraggedItem(item);
-                if(e.dataTransfer) {
-                   e.dataTransfer.setData("text/plain", item.id);
-                   e.dataTransfer.effectAllowed = "move";
+                if (e.dataTransfer) {
+                    e.dataTransfer.setData("text/plain", item.id);
+                    e.dataTransfer.effectAllowed = "move";
                 }
             };
 
             const handleDragOver = (e) => {
-                e.preventDefault(); 
-                if(e.dataTransfer) e.dataTransfer.dropEffect = "move";
+                e.preventDefault();
+                if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
             };
 
             const handleDrop = (e, bucketType) => {
                 e.preventDefault();
                 if (dragSubmitted || !draggedItem) return;
-                
+
                 setDragPool(prev => prev.filter(i => i.id !== draggedItem.id));
                 const newBuckets = { ...dragBuckets };
                 ['asymmetry', 'radial', 'bilateral'].forEach(k => {
@@ -374,32 +660,34 @@
             };
 
             const handleClickMove = (item) => {
-                if(dragSubmitted) return;
-                const target = prompt("Escribe: 1 (Asimetría), 2 (Radial), 3 (Bilateral)");
-                if(target === '1') manualMove(item, 'asymmetry');
-                if(target === '2') manualMove(item, 'radial');
-                if(target === '3') manualMove(item, 'bilateral');
+                if (dragSubmitted) return;
+                const target = prompt("1 (Asimetría), 2 (Radial), 3 (Bilateral)");
+                if (target === '1') manualMove(item, 'asymmetry');
+                if (target === '2') manualMove(item, 'radial');
+                if (target === '3') manualMove(item, 'bilateral');
             };
-            
+
             const manualMove = (item, bucket) => {
                 setDragPool(prev => prev.filter(i => i.id !== item.id));
                 const newBuckets = { ...dragBuckets };
                 ['asymmetry', 'radial', 'bilateral'].forEach(k => newBuckets[k] = newBuckets[k].filter(i => i.id !== item.id));
-                newBuckets[bucket].push(item);
+                if (bucket !== 'pool') newBuckets[bucket].push(item);
+                else setDragPool(prev => [...prev, item]);
+
                 setDragBuckets(newBuckets);
             };
 
             const submitDragDrop = () => {
                 if (dragPool.length > 0) {
-                    alert("Por favor arrastra todas las imágenes a su lugar.");
+                    alert(t.errorDrag);
                     return;
                 }
                 setDragSubmitted(true);
                 let pts = 0;
-                
-                dragBuckets.asymmetry.forEach(i => i.type === 'asymmetry' ? pts+=2 : setMistakes(p=>[...p, {section:"Clasificación", q: "Error en Asimetría", info: "Revisa Esponjas/Corales"}]));
-                dragBuckets.radial.forEach(i => i.type === 'radial' ? pts+=2 : setMistakes(p=>[...p, {section:"Clasificación", q: "Error en Radial", info: "Revisa Medusas/Erizos"}]));
-                dragBuckets.bilateral.forEach(i => i.type === 'bilateral' ? pts+=2 : setMistakes(p=>[...p, {section:"Clasificación", q: "Error en Bilateral", info: "Revisa Insectos/Arácnidos"}]));
+
+                dragBuckets.asymmetry.forEach(i => i.type === 'asymmetry' ? pts += 2 : setMistakes(p => [...p, { section: "Clasificación", q: "Error en Asimetría", info: "Revisa Esponjas/Corales" }]));
+                dragBuckets.radial.forEach(i => i.type === 'radial' ? pts += 2 : setMistakes(p => [...p, { section: "Clasificación", q: "Error en Radial", info: "Revisa Medusas/Erizos" }]));
+                dragBuckets.bilateral.forEach(i => i.type === 'bilateral' ? pts += 2 : setMistakes(p => [...p, { section: "Clasificación", q: "Error en Bilateral", info: "Revisa Insectos/Arácnidos" }]));
 
                 const finalScore = score + pts;
                 setScore(finalScore);
@@ -425,29 +713,31 @@
             // --- RENDER ---
             const Header = () => (
                 <header className="w-full bg-white/90 backdrop-blur-sm shadow-lg p-4 flex justify-between items-center rounded-b-2xl mb-8 print:hidden">
-                    <img src="https://immsec.neocities.org/IMM.png" alt="Escudo" className="h-16 object-contain"/>
+                    <img src="https://immsec.neocities.org/IMM.png" alt="Escudo" className="h-16 object-contain" />
                     <div className="text-center hidden md:block">
-                        <h1 className="text-xl font-bold text-green-800">Examen de Biología</h1>
-                        <p className="text-sm text-gray-600">{datosAlumno.nombre} - {datosAlumno.grado}°{datosAlumno.grupo}</p>
+                        <h1 className="text-xl font-bold text-green-800">{t.title}</h1>
+                        <p className="text-sm text-gray-600">{datosAlumno.nombre} {datosAlumno.apellidoPaterno} - {datosAlumno.grado}°{datosAlumno.grupo}</p>
                     </div>
-                    <img src="https://immsec.neocities.org/Biology%20title.png" alt="Bio" className="h-12 object-contain"/>
+                    <img src="https://immsec.neocities.org/Biology%20title.png" alt="Bio" className="h-12 object-contain" />
                 </header>
             );
 
             if (view === 'login') return (
                 <div className="min-h-screen bg-green-600 p-4 flex flex-col items-center justify-center font-sans">
                     <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full text-center">
-                        <BookOpen />
-                        <h2 className="text-2xl font-bold mb-4 mt-4">Acceso al Examen</h2>
-                        <input 
-                            value={inputCodigo} 
-                            onChange={e=>setInputCodigo(e.target.value.toUpperCase())}
-                            placeholder="CÓDIGO (Ej. BIO2024)"
-                            className="w-full border-2 border-gray-300 rounded-lg p-3 text-center text-xl mb-4 font-mono uppercase"
+                        <div className="flex justify-center mb-4">
+                            <img src="https://immsec.neocities.org/Biology%20title.png" alt="Bio" className="h-20 object-contain" />
+                        </div>
+                        <h2 className="text-2xl font-bold mb-4 text-green-800">{t.access}</h2>
+                        <input
+                            value={inputCodigo}
+                            onChange={e => setInputCodigo(e.target.value.toUpperCase())}
+                            placeholder={t.codePlaceholder}
+                            className="w-full border-2 border-gray-300 rounded-lg p-3 text-center text-xl mb-4 font-mono uppercase focus:border-green-500 outline-none"
                         />
-                        {mensaje.text && <p className="text-red-500 mb-4">{mensaje.text}</p>}
-                        <button onClick={handleLogin} disabled={loading} className="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition">
-                            {loading ? 'Verificando...' : 'Ingresar'}
+                        {mensaje.text && <p className="text-red-500 mb-4 font-bold">{mensaje.text}</p>}
+                        <button onClick={handleLogin} disabled={loading} className="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition flex justify-center items-center">
+                            {loading ? <Loader2 className="animate-spin" /> : t.enter}
                         </button>
                     </div>
                 </div>
@@ -455,285 +745,315 @@
 
             if (view === 'registro') return (
                 <div className="min-h-screen bg-green-600 p-4 flex flex-col items-center pt-10 font-sans">
-                <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-2xl w-full">
-                    <h2 className="text-2xl font-bold text-center mb-6 text-green-800">Datos del Alumno</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        <input placeholder="Nombre(s)" className="p-3 border rounded" value={datosAlumno.nombre} onChange={e=>setDatosAlumno({...datosAlumno, nombre: e.target.value})} />
-                        <input placeholder="Apellido Paterno" className="p-3 border rounded" value={datosAlumno.apellidoPaterno} onChange={e=>setDatosAlumno({...datosAlumno, apellidoPaterno: e.target.value})} />
-                        <input placeholder="Apellido Materno" className="p-3 border rounded" value={datosAlumno.apellidoMaterno} onChange={e=>setDatosAlumno({...datosAlumno, apellidoMaterno: e.target.value})} />
-                        <div className="flex gap-2">
-                            <select className="p-3 border rounded flex-1" value={datosAlumno.grado} onChange={e=>setDatosAlumno({...datosAlumno, grado: e.target.value})}>
-                                <option value="1">1°</option><option value="2">2°</option><option value="3">3°</option>
-                            </select>
-                            <select className="p-3 border rounded flex-1" value={datosAlumno.grupo} onChange={e=>setDatosAlumno({...datosAlumno, grupo: e.target.value})}>
-                                <option value="A">A</option><option value="B">B</option><option value="D">D</option>
-                            </select>
+                    <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-2xl w-full">
+                        <div className="flex justify-between items-center mb-6">
+                            <img src="https://immsec.neocities.org/IMM.png" className="h-12" />
+                            <h2 className="text-2xl font-bold text-center text-green-800">{t.studentData}</h2>
+                            <div className="w-12"></div>
                         </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div className="col-span-2">
+                                <label className="block text-sm font-bold text-gray-700 mb-1">{t.name}</label>
+                                <input className="w-full p-3 border rounded focus:ring-2 ring-green-500 outline-none" value={datosAlumno.nombre} onChange={e => setDatosAlumno({ ...datosAlumno, nombre: e.target.value })} />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">{t.paternal}</label>
+                                <input className="w-full p-3 border rounded focus:ring-2 ring-green-500 outline-none" value={datosAlumno.apellidoPaterno} onChange={e => setDatosAlumno({ ...datosAlumno, apellidoPaterno: e.target.value })} />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">{t.maternal}</label>
+                                <input className="w-full p-3 border rounded focus:ring-2 ring-green-500 outline-none" value={datosAlumno.apellidoMaterno} onChange={e => setDatosAlumno({ ...datosAlumno, apellidoMaterno: e.target.value })} />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">{t.grade}</label>
+                                <select className="w-full p-3 border rounded focus:ring-2 ring-green-500 outline-none" value={datosAlumno.grado} onChange={e => setDatosAlumno({ ...datosAlumno, grado: e.target.value })}>
+                                    <option value="1">1°</option><option value="2">2°</option><option value="3">3°</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">{t.group}</label>
+                                <select className="w-full p-3 border rounded focus:ring-2 ring-green-500 outline-none" value={datosAlumno.grupo} onChange={e => setDatosAlumno({ ...datosAlumno, grupo: e.target.value })}>
+                                    <option value="A">A</option><option value="B">B</option><option value="D">D</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onClick={handleRegistro} disabled={!datosAlumno.nombre || !datosAlumno.apellidoPaterno} className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400">
+                            {t.start}
+                        </button>
                     </div>
-                    <button onClick={handleRegistro} disabled={!datosAlumno.nombre} className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition">
-                        Comenzar Examen
-                    </button>
-                </div>
                 </div>
             );
 
             return (
-                <div className="min-h-screen bg-gray-100 font-sans flex flex-col items-center pb-20">
-                <Header />
-                
-                <div className="fixed top-0 left-0 w-full h-2 bg-gray-200 z-50 print:hidden">
-                    <div className="h-full bg-green-500 transition-all duration-500" style={{ width: `${(score/maxScore)*100}%` }}></div>
-                </div>
-                <div className="fixed top-4 right-4 bg-white/90 px-4 py-2 rounded-full shadow font-bold text-green-800 z-40 print:hidden">
-                    Puntos: {score}
-                </div>
+                <div className="min-h-screen bg-green-50 font-sans flex flex-col items-center pb-20">
+                    <Header />
 
-                <main className="w-full max-w-4xl px-4">
-                    
-                    {/* FASE 1: MCQ */}
-                    {examPhase === 'mcq' && examData && (
-                    <div className="bg-white rounded-2xl shadow-xl overflow-hidden min-h-[400px] relative">
-                        {showFeedback === 'correct' && <Sparkles />}
-                        {showFeedback === 'incorrect' && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-red-500/10 z-10 pointer-events-none">
-                            <Frown size={120} className="text-red-500 animate-bounce" />
-                        </div>
-                        )}
-                        <div className="bg-green-700 p-6 text-white flex justify-between items-center">
-                        <span className="font-bold text-lg">Pregunta {currentQIndex + 1} de 10</span>
-                        <Activity />
-                        </div>
-                        <div className="p-8">
-                        <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-8">{examData.mcq[currentQIndex].q}</h3>
-                        <div className="grid grid-cols-1 gap-4">
-                            {examData.mcq[currentQIndex].options.map((opt, idx) => (
-                            <button
-                                key={idx}
-                                onClick={() => handleOptionSelect(idx)}
-                                disabled={showFeedback !== false}
-                                className={`text-left p-4 rounded-xl border-2 transition-all transform hover:scale-[1.01] active:scale-95
-                                ${selectedOption === idx 
-                                    ? (showFeedback === 'correct' ? 'bg-green-100 border-green-500 text-green-800' : 'bg-red-100 border-red-500 text-red-800')
-                                    : 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50'
-                                }
+                    <div className="fixed top-0 left-0 w-full h-2 bg-gray-200 z-50 print:hidden">
+                        <div className="h-full bg-green-500 transition-all duration-500" style={{ width: `${(score / maxScore) * 100}%` }}></div>
+                    </div>
+                    <div className="fixed top-4 right-4 bg-white/90 px-4 py-2 rounded-full shadow font-bold text-green-800 z-40 print:hidden border border-green-200">
+                        {t.points}: {score}
+                    </div>
+
+                    <main className="w-full max-w-4xl px-4">
+
+                        {/* FASE 1: MCQ */}
+                        {examPhase === 'mcq' && examData && (
+                            <div className="bg-white rounded-2xl shadow-xl overflow-hidden min-h-[400px] relative border border-green-100">
+                                {showFeedback === 'correct' && <Sparkles />}
+                                {showFeedback === 'incorrect' && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-red-500/10 z-10 pointer-events-none">
+                                        <Frown size={120} className="text-red-500 animate-bounce" />
+                                    </div>
+                                )}
+                                <div className="bg-green-700 p-6 text-white flex justify-between items-center">
+                                    <span className="font-bold text-lg">{t.question} {currentQIndex + 1} {t.of} 10</span>
+                                    <Activity />
+                                </div>
+                                <div className="p-8">
+                                    <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-8">{examData.mcq[currentQIndex].q[language]}</h3>
+                                    <div className="grid grid-cols-1 gap-4">
+                                        {examData.mcq[currentQIndex].options[language].map((opt, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={() => handleOptionSelect(idx)}
+                                                disabled={showFeedback !== false}
+                                                className={`text-left p-4 rounded-xl border-2 transition-all transform hover:scale-[1.01] active:scale-95
+                                ${selectedOption === idx
+                                                        ? (showFeedback === 'correct' ? 'bg-green-100 border-green-500 text-green-800' : 'bg-red-100 border-red-500 text-red-800')
+                                                        : 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                                                    }
                                 `}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border 
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border 
                                     ${selectedOption === idx ? 'border-current' : 'border-gray-300 text-gray-400'}`}>
-                                    {String.fromCharCode(65 + idx)}
+                                                        {String.fromCharCode(65 + idx)}
+                                                    </div>
+                                                    <span className="text-lg font-medium">{opt}</span>
+                                                </div>
+                                            </button>
+                                        ))}
                                     </div>
-                                    <span className="text-lg font-medium">{opt}</span>
-                                </div>
-                            </button>
-                            ))}
-                        </div>
-                        </div>
-                    </div>
-                    )}
-
-                    {/* FASE 2: CLADOGRAMA */}
-                    {examPhase === 'cladogram' && (
-                    <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-                        {cladogramSubmitted && <div className="absolute inset-0 z-10 bg-white/50 flex justify-center items-center"><span className="text-2xl font-bold text-green-800 bg-white p-4 rounded shadow">¡Guardado!</span></div>}
-                        <div className="bg-blue-600 p-6 text-white">
-                        <h2 className="text-xl font-bold">Ordena el Cladograma</h2>
-                        <p className="opacity-90">Basándote en la tabla, ordena los organismos del más simple (menos 1s) al más complejo (más 1s).</p>
-                        </div>
-                        
-                        <div className="p-6 overflow-x-auto">
-                            <h3 className="font-bold text-gray-700 mb-2 flex items-center gap-2"><HelpCircle /> Tabla de Caracteres (Referencia)</h3>
-                            <table className="min-w-full text-sm border-collapse border border-gray-300">
-                            <thead>
-                                <tr className="bg-gray-100">
-                                <th className="border p-2">Organismo</th>
-                                {examData.cladogram.traits.map(t => <th key={t} className="border p-2">{t}</th>)}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {examData.cladogram.matrix.map((row, i) => (
-                                <tr key={i} className="text-center">
-                                    <td className="border p-2 font-bold text-left">{row.name}</td>
-                                    <td className="border p-2">{row.t1}</td>
-                                    <td className="border p-2">{row.t2}</td>
-                                    <td className="border p-2">{row.t3}</td>
-                                    <td className="border p-2">{row.t4}</td>
-                                    <td className="border p-2">{row.t5}</td>
-                                </tr>
-                                ))}
-                            </tbody>
-                            </table>
-                        </div>
-
-                        <div className="px-6 pb-6 space-y-2">
-                            <p className="text-sm text-gray-500 mb-2">Ordena aquí (Arriba: Menos complejo / Abajo: Más complejo):</p>
-                            {cladogramItems.map((item, idx) => (
-                            <div key={item} className="flex items-center gap-2 bg-blue-50 p-3 rounded-lg border border-blue-200">
-                                <span className="font-bold text-blue-400 w-6 text-center">{idx+1}</span>
-                                <div className="flex-1 font-bold text-blue-900">{item}</div>
-                                <div className="flex flex-col gap-1">
-                                    <button onClick={() => moveItem(idx, -1)} disabled={idx === 0 || cladogramSubmitted} className="p-1 bg-white rounded shadow hover:bg-gray-100 disabled:opacity-30">⬆️</button>
-                                    <button onClick={() => moveItem(idx, 1)} disabled={idx === cladogramItems.length - 1 || cladogramSubmitted} className="p-1 bg-white rounded shadow hover:bg-gray-100 disabled:opacity-30">⬇️</button>
                                 </div>
                             </div>
-                            ))}
-                        </div>
-                        <div className="p-4 bg-gray-100 flex justify-end">
-                        <button onClick={submitCladogram} disabled={cladogramSubmitted} className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 disabled:bg-gray-400">
-                            Enviar Diagrama
-                        </button>
-                        </div>
-                    </div>
-                    )}
-
-                    {/* FASE 3: MATCHING */}
-                    {examPhase === 'matching' && (
-                    <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-                        <div className="bg-purple-600 p-6 text-white">
-                        <h2 className="text-xl font-bold">Relaciona Conceptos</h2>
-                        <p className="opacity-90">{examData.matching.title}</p>
-                        </div>
-                        <div className="p-6 space-y-4">
-                            {examData.matching.pairs.map((pair, idx) => (
-                            <div key={idx} className="flex flex-col md:flex-row md:items-center gap-4 border-b pb-4 last:border-0">
-                                <div className="flex-1 bg-purple-50 p-3 rounded text-purple-900 font-medium">{pair.def}</div>
-                                <ArrowRight className="hidden md:block" />
-                                <div className="flex-1">
-                                    <select 
-                                    className="w-full p-3 border-2 border-purple-200 rounded-lg bg-white"
-                                    value={matches[idx] || ''}
-                                    onChange={(e) => handleMatch(idx, e.target.value)}
-                                    disabled={matchingSubmitted}
-                                    >
-                                    <option value="">Selecciona respuesta...</option>
-                                    {[...examData.matching.pairs].sort((a,b) => a.term.localeCompare(b.term)).map((opt, i) => (
-                                        <option key={i} value={opt.term}>{opt.term}</option>
-                                    ))}
-                                    </select>
-                                </div>
-                            </div>
-                            ))}
-                        </div>
-                        <div className="p-4 bg-gray-100 flex justify-end">
-                        <button onClick={submitMatching} disabled={matchingSubmitted} className="bg-purple-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-purple-700 disabled:bg-gray-400">
-                            Enviar Relaciones
-                        </button>
-                        </div>
-                    </div>
-                    )}
-
-                    {/* FASE 4: DRAG & DROP */}
-                    {examPhase === 'dragdrop' && (
-                    <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-                        <div className="bg-orange-500 p-6 text-white">
-                        <h2 className="text-xl font-bold">Clasifica la Simetría</h2>
-                        <p className="opacity-90">Arrastra la imagen a la casilla correcta.</p>
-                        </div>
-                        
-                        {/* BANCO DE IMAGENES */}
-                        <div className="p-4 bg-gray-100 flex flex-wrap gap-4 min-h-[120px] justify-center">
-                            {dragPool.map(item => (
-                            <div 
-                                key={item.id} 
-                                draggable={!dragSubmitted}
-                                onDragStart={(e) => handleDragStart(e, item)}
-                                onClick={() => handleClickMove(item)}
-                                className="bg-white p-2 rounded-lg shadow-md cursor-grab active:cursor-grabbing hover:ring-2 ring-orange-400 transition transform hover:scale-105"
-                            >
-                                <img src={item.src} alt="item" className="w-20 h-20 object-contain pointer-events-none" />
-                            </div>
-                            ))}
-                            {dragPool.length === 0 && <p className="text-gray-400 italic self-center">¡Todas clasificadas!</p>}
-                        </div>
-
-                        {/* ZONAS DE DROP */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x border-t">
-                            {[
-                            { id: 'asymmetry', title: 'Asimetría', color: 'bg-red-50', border: 'border-red-200' },
-                            { id: 'radial', title: 'Simetría Radial', color: 'bg-blue-50', border: 'border-blue-200' },
-                            { id: 'bilateral', title: 'Simetría Bilateral', color: 'bg-green-50', border: 'border-green-200' }
-                            ].map(zone => (
-                            <div 
-                                key={zone.id} 
-                                onDragOver={handleDragOver}
-                                onDrop={(e) => handleDrop(e, zone.id)}
-                                className={`${zone.color} p-4 min-h-[250px] transition-colors hover:bg-opacity-80`}
-                            >
-                                <h3 className="font-bold text-center mb-4 text-gray-700 border-b pb-2">{zone.title}</h3>
-                                <div className={`space-y-2 min-h-[150px] border-2 border-dashed ${zone.border} rounded-lg p-2 flex flex-col`}>
-                                    {dragBuckets[zone.id].map(item => (
-                                    <div key={item.id} className="bg-white p-2 rounded shadow flex items-center gap-2 animate-fade-in-up">
-                                        <img src={item.src} className="w-10 h-10 object-contain" />
-                                        {!dragSubmitted && (
-                                            <button 
-                                            onClick={() => manualMove(item, 'pool')}
-                                            className="text-red-500 font-bold ml-auto px-2"
-                                            title="Devolver"
-                                            >×</button>
-                                        )}
-                                    </div>
-                                    ))}
-                                    {dragBuckets[zone.id].length === 0 && <p className="text-center text-gray-400 text-sm mt-10">Suelta aquí</p>}
-                                </div>
-                            </div>
-                            ))}
-                        </div>
-
-                        <div className="p-4 bg-gray-100 flex justify-end">
-                        <button onClick={submitDragDrop} disabled={dragSubmitted} className="bg-orange-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-orange-700 disabled:bg-gray-400">
-                            Finalizar Examen
-                        </button>
-                        </div>
-                    </div>
-                    )}
-
-                    {/* FASE 5: RESULTADOS */}
-                    {examPhase === 'results' && (
-                    <div className="bg-white rounded-2xl shadow-xl p-8 text-center print:shadow-none print:w-full">
-                        <div className="print:hidden mb-6 flex justify-center">
-                        <PartyPopper size={64} className="text-yellow-500 animate-bounce" />
-                        </div>
-                        
-                        <h2 className="text-3xl font-bold text-green-800 mb-2">Resultados Finales</h2>
-                        <p className="text-xl text-gray-600 mb-8">{datosAlumno.nombre} {datosAlumno.apellidoPaterno} - {datosAlumno.grado}°{datosAlumno.grupo}</p>
-
-                        <div className="inline-block bg-gray-100 rounded-full px-8 py-4 mb-8 border-4 border-green-500">
-                        <span className="text-5xl font-bold text-gray-800">{score}</span>
-                        <span className="text-2xl text-gray-500"> / {maxScore}</span>
-                        </div>
-                        
-                        <div className="bg-blue-50 p-4 rounded-lg mb-8 text-blue-800 font-medium text-xl">
-                        Calificación Final: <span className="font-bold text-3xl">{((score / maxScore) * 100).toFixed(0)}</span> / 100
-                        </div>
-
-                        {loading && <div className="text-green-600 flex justify-center items-center gap-2 mb-4"><Loader2 className="animate-spin"/> Guardando en base de datos...</div>}
-                        {!loading && <div className="text-green-600 flex justify-center items-center gap-2 mb-4"><CheckCircle/> ¡Guardado Exitosamente!</div>}
-
-                        {mistakes.length > 0 && (
-                        <div className="text-left border-t pt-6">
-                            <h3 className="text-xl font-bold text-red-600 mb-4 flex items-center gap-2">
-                            <AlertCircle /> Áreas de Oportunidad
-                            </h3>
-                            <div className="space-y-3">
-                            {mistakes.map((m, i) => (
-                                <div key={i} className="bg-red-50 p-3 rounded text-sm">
-                                    <span className="font-bold block text-red-800">[{m.section}] {m.q}</span>
-                                    {m.yourAns && <span className="block text-red-600">Tu respuesta: {m.yourAns}</span>}
-                                    {m.correct && <span className="block text-green-700 font-bold">Correcta: {m.correct}</span>}
-                                    {m.info && <span className="block text-gray-600">{m.info}</span>}
-                                </div>
-                            ))}
-                            </div>
-                        </div>
                         )}
 
-                        <button onClick={() => window.print()} className="mt-8 bg-gray-800 text-white px-8 py-4 rounded-xl font-bold flex items-center justify-center gap-2 mx-auto hover:bg-black transition print:hidden">
-                        <Printer /> Imprimir Resultados (PDF)
-                        </button>
-                    </div>
-                    )}
+                        {/* FASE 2: CLADOGRAMA */}
+                        {examPhase === 'cladogram' && (
+                            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-blue-100">
+                                {cladogramSubmitted && <div className="absolute inset-0 z-10 bg-white/50 flex justify-center items-center"><span className="text-2xl font-bold text-green-800 bg-white p-4 rounded shadow">¡Guardado!</span></div>}
+                                <div className="bg-blue-600 p-6 text-white">
+                                    <h2 className="text-xl font-bold">{t.cladogramTitle}</h2>
+                                    <p className="opacity-90">{t.cladogramDesc}</p>
+                                </div>
 
-                </main>
+                                <div className="p-6 overflow-x-auto">
+                                    <h3 className="font-bold text-gray-700 mb-2 flex items-center gap-2"><HelpCircle /> {t.charTable}</h3>
+                                    <table className="min-w-full text-sm border-collapse border border-gray-300 mb-6">
+                                        <thead>
+                                            <tr className="bg-gray-100">
+                                                <th className="border p-2">{t.organism}</th>
+                                                {examData.cladogram.traits[language].map(tr => <th key={tr} className="border p-2">{tr}</th>)}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {examData.cladogram.matrix.map((row, i) => (
+                                                <tr key={i} className="text-center">
+                                                    <td className="border p-2 font-bold text-left">{row.name[language]}</td>
+                                                    <td className="border p-2">{row.t1}</td>
+                                                    <td className="border p-2">{row.t2}</td>
+                                                    <td className="border p-2">{row.t3}</td>
+                                                    <td className="border p-2">{row.t4}</td>
+                                                    <td className="border p-2">{row.t5}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+
+                                    <div className="space-y-2 max-w-lg mx-auto">
+                                        <p className="text-sm text-gray-500 mb-2 text-center font-bold">{t.orderHere}</p>
+                                        {cladogramItems.map((item, idx) => (
+                                            <div key={item} className="flex items-center gap-2 bg-blue-50 p-3 rounded-lg border border-blue-200 shadow-sm">
+                                                <span className="font-bold text-blue-400 w-6 text-center">{idx + 1}</span>
+                                                <div className="flex-1 font-bold text-blue-900">{item}</div>
+                                                <div className="flex flex-col gap-1">
+                                                    <button onClick={() => moveItem(idx, -1)} disabled={idx === 0 || cladogramSubmitted} className="p-1 bg-white rounded shadow hover:bg-gray-100 disabled:opacity-30 text-xs">⬆️</button>
+                                                    <button onClick={() => moveItem(idx, 1)} disabled={idx === cladogramItems.length - 1 || cladogramSubmitted} className="p-1 bg-white rounded shadow hover:bg-gray-100 disabled:opacity-30 text-xs">⬇️</button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="p-4 bg-gray-100 flex justify-end">
+                                    <button onClick={submitCladogram} disabled={cladogramSubmitted} className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 disabled:bg-gray-400 transition">
+                                        {t.submitDiagram}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* FASE 3: MATCHING */}
+                        {examPhase === 'matching' && (
+                            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-purple-100">
+                                <div className="bg-purple-600 p-6 text-white">
+                                    <h2 className="text-xl font-bold">{t.matchingTitle}</h2>
+                                    <p className="opacity-90">{examData.matching.title[language]}</p>
+                                </div>
+                                <div className="p-6 space-y-4">
+                                    {examData.matching.pairs.map((pair, idx) => (
+                                        <div key={idx} className="flex flex-col md:flex-row md:items-center gap-4 border-b pb-4 last:border-0">
+                                            <div className="flex-1 bg-purple-50 p-4 rounded-lg text-purple-900 font-medium shadow-sm">{pair.def[language]}</div>
+                                            <ArrowRight className="hidden md:block text-purple-300" />
+                                            <div className="flex-1">
+                                                <select
+                                                    className="w-full p-3 border-2 border-purple-200 rounded-lg bg-white focus:border-purple-500 outline-none"
+                                                    value={matches[idx] || ''}
+                                                    onChange={(e) => handleMatch(idx, e.target.value)}
+                                                    disabled={matchingSubmitted}
+                                                >
+                                                    <option value="">{t.selectAnswer}</option>
+                                                    {[...examData.matching.pairs].sort((a, b) => a.term[language].localeCompare(b.term[language])).map((opt, i) => (
+                                                        <option key={i} value={opt.term[language]}>{opt.term[language]}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="p-4 bg-gray-100 flex justify-end">
+                                    <button onClick={submitMatching} disabled={matchingSubmitted} className="bg-purple-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-purple-700 disabled:bg-gray-400 transition">
+                                        {t.submitMatching}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* FASE 4: DRAG & DROP */}
+                        {examPhase === 'dragdrop' && (
+                            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-orange-100">
+                                <div className="bg-orange-500 p-6 text-white">
+                                    <h2 className="text-xl font-bold">{t.dragTitle}</h2>
+                                    <p className="opacity-90">{t.dragDesc}</p>
+                                </div>
+
+                                {/* BANCO DE IMAGENES */}
+                                <div className="p-4 bg-gray-100 flex flex-wrap gap-4 min-h-[120px] justify-center items-center">
+                                    {dragPool.map(item => (
+                                        <div
+                                            key={item.id}
+                                            draggable={!dragSubmitted}
+                                            onDragStart={(e) => handleDragStart(e, item)}
+                                            onClick={() => handleClickMove(item)}
+                                            className="bg-white p-2 rounded-lg shadow-md cursor-grab active:cursor-grabbing hover:ring-2 ring-orange-400 transition transform hover:scale-105"
+                                        >
+                                            <img src={item.src} alt="item" className="w-20 h-20 object-contain pointer-events-none" />
+                                        </div>
+                                    ))}
+                                    {dragPool.length === 0 && <p className="text-gray-400 italic font-medium">{t.allClassified}</p>}
+                                </div>
+
+                                {/* ZONAS DE DROP */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x border-t">
+                                    {[
+                                        { id: 'asymmetry', title: t.asymmetry, color: 'bg-red-50', border: 'border-red-200' },
+                                        { id: 'radial', title: t.radial, color: 'bg-blue-50', border: 'border-blue-200' },
+                                        { id: 'bilateral', title: t.bilateral, color: 'bg-green-50', border: 'border-green-200' }
+                                    ].map(zone => (
+                                        <div
+                                            key={zone.id}
+                                            onDragOver={handleDragOver}
+                                            onDrop={(e) => handleDrop(e, zone.id)}
+                                            className={`${zone.color} p-4 min-h-[250px] transition-colors hover:bg-opacity-80`}
+                                        >
+                                            <h3 className="font-bold text-center mb-4 text-gray-700 border-b pb-2">{zone.title}</h3>
+                                            <div className={`space-y-2 min-h-[150px] border-2 border-dashed ${zone.border} rounded-lg p-2 flex flex-col`}>
+                                                {dragBuckets[zone.id].map(item => (
+                                                    <div key={item.id} className="bg-white p-2 rounded shadow flex items-center gap-2 animate-fade-in-up">
+                                                        <img src={item.src} className="w-10 h-10 object-contain" />
+                                                        {!dragSubmitted && (
+                                                            <button
+                                                                onClick={() => manualMove(item, 'pool')}
+                                                                className="text-red-500 font-bold ml-auto px-2 hover:bg-red-100 rounded"
+                                                                title="Devolver"
+                                                            >×</button>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                                {dragBuckets[zone.id].length === 0 && <p className="text-center text-gray-400 text-sm mt-10 select-none">{t.dropHere}</p>}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="p-4 bg-gray-100 flex justify-end">
+                                    <button onClick={submitDragDrop} disabled={dragSubmitted} className="bg-orange-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-orange-700 disabled:bg-gray-400 transition">
+                                        {t.finish}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* FASE 5: RESULTADOS */}
+                        {examPhase === 'results' && (
+                            <div className="bg-white rounded-2xl shadow-xl p-8 text-center print:shadow-none print:w-full print:p-0">
+                                <div className="print:hidden mb-6 flex justify-center">
+                                    <PartyPopper size={64} className="text-yellow-500 animate-bounce" />
+                                </div>
+
+                                <div className="flex justify-between items-center mb-8 print:mb-4">
+                                    <img src="https://immsec.neocities.org/IMM.png" className="h-16 hidden print:block" />
+                                    <div className="flex-1">
+                                        <h2 className="text-3xl font-bold text-green-800 mb-2">{t.results}</h2>
+                                        <p className="text-xl text-gray-600">{datosAlumno.nombre} {datosAlumno.apellidoPaterno} {datosAlumno.apellidoMaterno}</p>
+                                        <p className="text-lg text-gray-500">{datosAlumno.grado}°{datosAlumno.grupo}</p>
+                                    </div>
+                                    <img src="https://immsec.neocities.org/Biology%20title.png" className="h-12 hidden print:block" />
+                                </div>
+
+                                <div className="inline-block bg-gray-100 rounded-full px-8 py-4 mb-8 border-4 border-green-500 print:border-2 print:bg-white">
+                                    <span className="text-5xl font-bold text-gray-800">{score}</span>
+                                    <span className="text-2xl text-gray-500"> / {maxScore}</span>
+                                </div>
+
+                                <div className="bg-blue-50 p-4 rounded-lg mb-8 text-blue-800 font-medium text-xl print:bg-white print:border print:border-blue-200">
+                                    {t.finalGrade}: <span className="font-bold text-3xl">{((score / maxScore) * 100).toFixed(0)}</span> / 100
+                                </div>
+
+                                <div className="print:hidden">
+                                    {loading && <div className="text-green-600 flex justify-center items-center gap-2 mb-4"><Loader2 className="animate-spin" /> {t.saving}</div>}
+                                    {!loading && <div className="text-green-600 flex justify-center items-center gap-2 mb-4"><CheckCircle /> {t.saved}</div>}
+                                </div>
+
+                                {mistakes.length > 0 ? (
+                                    <div className="text-left border-t pt-6 print:text-sm">
+                                        <h3 className="text-xl font-bold text-red-600 mb-4 flex items-center gap-2">
+                                            <AlertCircle /> {t.areasOfOpp}
+                                        </h3>
+                                        <div className="space-y-3">
+                                            {mistakes.map((m, i) => (
+                                                <div key={i} className="bg-red-50 p-3 rounded text-sm print:bg-white print:border print:border-red-100">
+                                                    <span className="font-bold block text-red-800">[{m.section}] {m.q}</span>
+                                                    {m.yourAns && <span className="block text-red-600">{t.yourAns}: {m.yourAns}</span>}
+                                                    {m.correct && <span className="block text-green-700 font-bold">{t.correct}: {m.correct}</span>}
+                                                    {m.info && <span className="block text-gray-600">{m.info}</span>}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="text-green-600 font-bold text-xl mt-8">{t.excellent}</div>
+                                )}
+
+                                <button onClick={() => window.print()} className="mt-8 bg-gray-800 text-white px-8 py-4 rounded-xl font-bold flex items-center justify-center gap-2 mx-auto hover:bg-black transition print:hidden shadow-lg">
+                                    <Printer /> {t.print}
+                                </button>
+                            </div>
+                        )}
+
+                    </main>
                 </div>
             );
         }
@@ -742,4 +1062,5 @@
         root.render(<ExamenApp />);
     </script>
 </body>
+
 </html>
