@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación RPG Pixel Art - Team Performance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ecf0f1;
+            padding: 20px;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, .05) 2px, rgba(0, 0, 0, .05) 4px);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(44, 62, 80, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 4px solid #f39c12;
+            position: relative;
+            z-index: 2;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            text-align: center;
+            color: #f1c40f;
+            text-shadow: 3px 3px #000, -1px -1px 0 #e67e22;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        h2 {
+            color: #3498db;
+            text-shadow: 2px 2px #000;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.3em;
+            margin: 20px 0;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 1.2em;
+            color: #95a5a6;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        label {
+            display: block;
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 1.3em;
+            color: #ecf0f1;
+        }
+
+        select,
+        input,
+        button {
+            width: 100%;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 10px;
+            border: 3px solid #34495e;
+            font-size: 1.2em;
+            font-family: 'VT323', monospace;
+            transition: all 0.3s ease;
+        }
+
+        select,
+        input {
+            background-color: #34495e;
+            color: #ecf0f1;
+        }
+
+        select:focus,
+        input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
+        }
+
+        button {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+            border: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
+
+        .btn-tertiary {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        }
+
+        .btn-back {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .question-card {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 6px solid #3498db;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .question-card:hover {
+            transform: translateX(5px);
+            border-left-color: #f39c12;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .question-card label {
+            margin-top: 0;
+            font-size: 1.2em;
+            line-height: 1.5;
+        }
+
+        .role-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            border: 2px solid #1e8449;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .pixel-border {
+            border: 5px solid #000;
+            box-shadow:
+                inset 0 0 0 2px #f39c12,
+                0 0 0 2px #000;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 8px solid #34495e;
+            border-top: 8px solid #f39c12;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .score-select {
+            background: linear-gradient(135deg, #16a085 0%, #138d75 100%);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .info-box {
+            background: rgba(52, 152, 219, 0.2);
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 1.1em;
+        }
+
+        .warning-box {
+            background: rgba(230, 126, 34, 0.2);
+            border: 2px solid #e67e22;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 1.1em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.2em;
+            }
+
+            h2 {
+                font-size: 1em;
+            }
+
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container pixel-border">
+        <h1>⚔️ EVALUACIÓN RPG ⚔️</h1>
+        <p class="subtitle">🎮 Desarrollo Asistido por IA - Arte y Narrativa Originales 🎨</p>
+
+        <!-- PASO 1: Selección de Compañía -->
+        <div id="step-company">
+            <div class="info-box">
+                📋 <strong>Instrucciones:</strong> Selecciona tu compañía de desarrollo de videojuegos para comenzar la
+                evaluación.
+            </div>
+            <label>🏢 Selecciona tu Compañía:</label>
+            <select id="companySelect" onchange="loadMembers()">
+                <option value="">-- Seleccionar Compañía --</option>
+            </select>
+        </div>
+
+        <!-- PASO 2: Identificación del Usuario -->
+        <div id="step-identity" class="hidden">
+            <h2>👤 ¿Quién eres tú?</h2>
+            <label>Soy:</label>
+            <select id="userSelect" onchange="detectUserRole()">
+                <option value="">-- Seleccionar tu nombre --</option>
+            </select>
+            <p id="myRoleDisplay"
+                style="text-align: center; font-style: italic; color: #f39c12; font-size: 1.3em; margin-top: 15px;"></p>
+
+            <div id="action-buttons" class="hidden action-buttons">
+                <button onclick="startSelfEval()" class="btn-secondary">🛡️ Auto-Evaluación</button>
+                <button onclick="showTeammates()" class="btn-tertiary">⚔️ Evaluar Compañero</button>
+            </div>
+        </div>
+
+        <!-- PASO 3: Selección de Compañero a Evaluar -->
+        <div id="step-peer-select" class="hidden">
+            <h2>🎯 ¿A quién evaluarás?</h2>
+            <label>Selecciona un compañero de equipo:</label>
+            <select id="peerSelect">
+                <option value="">-- Seleccionar compañero --</option>
+            </select>
+            <button onclick="startPeerEval()">Comenzar Evaluación</button>
+            <button onclick="resetApp()" class="btn-back">⬅️ Volver</button>
+        </div>
+
+        <!-- PASO 4: Formulario de Evaluación -->
+        <div id="step-form" class="hidden">
+            <h2 id="formTitle">Evaluación</h2>
+            <p id="targetName" class="role-badge"></p>
+            <div class="warning-box">
+                ⚠️ <strong>Importante:</strong> Responde honestamente. Cada pregunta vale 10 puntos. El puntaje final
+                será sobre 100.
+            </div>
+            <div id="questionsContainer"></div>
+            <button onclick="submitEvaluation()">📤 ENVIAR EVALUACIÓN</button>
+            <button onclick="resetApp()" class="btn-back">⬅️ Cancelar</button>
+        </div>
+
+        <!-- PASO 5: Cargando -->
+        <div id="step-loading" class="hidden">
+            <div class="loading-spinner">
+                <h2 style="text-align: center;">💾 Guardando en Google Sheets...</h2>
+                <div class="spinner"></div>
+                <p style="text-align: center; font-size: 1.2em;">Por favor espera...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ✅ URL DE TU GOOGLE APPS SCRIPT
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxfvXsMkEHoJEgCmuKlLO6szEEzcoNK1qOacZKnan0jNoc1nul3cSDPsW5ni8RAmhxAyg/exec";
+
+        // BASE DE DATOS DE EQUIPOS
+        const database = [
+            {
+                company: "Ravnsarx",
+                game: "Survive 24 hours in elevator",
+                members: [
+                    { name: "Vanesa Nicole Miguel Moreno", role: "CEO" },
+                    { name: "AnahÍ Paez Hernádez", role: "Lead Programmer" },
+                    { name: "Stella del Pilar Carcamo Guzman", role: "Art Director" },
+                    { name: "Rebeka Escalera Islas", role: "Narrative Designer" },
+                    { name: "Ximena Hernández López", role: "UI/UX Designer" }
+                ]
+            },
+            {
+                company: "Tim_Potato",
+                game: "Is this case closed?",
+                members: [
+                    { name: "Liz Mariel Varela Moreno", role: "CEO" },
+                    { name: "Renata Ramos López", role: "Lead Programmer" },
+                    { name: "Victoria Real Ortega", role: "Art Director" },
+                    { name: "Elian Nahil Carro Espinosa", role: "Narrative Designer" },
+                    { name: "Roma Sophia Sanchez Rivera", role: "UI/UX Designer" },
+                    { name: "Octavio Damian Torres Quesnel", role: "Marketing Director" }
+                ]
+            },
+            {
+                company: "Nexonix Games",
+                game: "Flee the house",
+                members: [
+                    { name: "yaron abdiel mora sanchez", role: "CEO" },
+                    { name: "Oscar Emiliano Lopez Hernández", role: "Lead Programmer" },
+                    { name: "Ernesto Ramírez Quiríz", role: "Art Director" },
+                    { name: "Luz Merlos Soriano", role: "Narrative Designer" },
+                    { name: "Diego Alonso Flores Días", role: "UI/UX Designer" }
+                ]
+            },
+            {
+                company: "Mazegames",
+                game: "Paint wars. maze attack",
+                members: [
+                    { name: "Pamela Pérez", role: "CEO" },
+                    { name: "Maily García Lobaton", role: "Lead Programmer" },
+                    { name: "Isabella Noriega Ferrer", role: "Art Director" },
+                    { name: "Ximena Guadalupe Gutiérrez Rodriguez", role: "Narrative Designer" },
+                    { name: "Silvana Paola Rojas Espinosa", role: "UI/UX Designer" }
+                ]
+            },
+            {
+                company: "Afton Robotics",
+                game: "The purple curse",
+                members: [
+                    { name: "camila babette vazquez ruiz", role: "CEO" },
+                    { name: "natalia orozco ramos", role: "Lead Programmer" },
+                    { name: "rebeca yinely reyes silva", role: "Art Director" },
+                    { name: "julieta michelle Miranda González", role: "Narrative Designer" },
+                    { name: "scarlett Schiaffini Badillo", role: "UI/UX Designer" }
+                ]
+            },
+            {
+                company: "M.L.E.B.A",
+                game: "Pixel Gun 2D",
+                members: [
+                    { name: "Máximo Suárez Zenteno", role: "CEO" },
+                    { name: "Enrique Ramírez Quiríz", role: "Lead Programmer" },
+                    { name: "Andrés Treviño Flores", role: "Art Director" },
+                    { name: "Luis Antonio Malpica Cisneros", role: "Narrative Designer" },
+                    { name: "Brayan Eduardo Diego Hernandez", role: "UI/UX Designer" }
+                ]
+            },
+            {
+                company: "Cellsuper",
+                game: "Kings of clans",
+                members: [
+                    { name: "Iker Isaac Sánchez Cruz", role: "CEO" },
+                    { name: "Aldo Santiago Aguilar Cesar", role: "Lead Programmer" },
+                    { name: "Edwin Rafael Balbuena Méndez", role: "Art Director" },
+                    { name: "Víctor Hugo Blanco Herrera", role: "Narrative Designer" },
+                    { name: "Luis Fernando Vázquez", role: "UI/UX Designer" }
+                ]
+            },
+            {
+                company: "PAPOI'S",
+                game: "Papoi's War",
+                members: [
+                    { name: "Isabella Nicole Pérez Calva", role: "CEO" },
+                    { name: "Sofía Elizabeth Brito Ortíz", role: "Lead Programmer" },
+                    { name: "Isabella Guzmán Aguilar", role: "Art Director" },
+                    { name: "Jennifer Barber Angeles", role: "Narrative Designer" },
+                    { name: "Aurora Ibáñez Dorantes", role: "UI/UX Designer" },
+                    { name: "Mildred Alonso Gonzalez", role: "Marketing Director" }
+                ]
+            },
+            {
+                company: "JINDAM",
+                game: "The Glitch House",
+                members: [
+                    { name: "Ana Sophia Escamilla Zárate", role: "CEO" },
+                    { name: "Dafne González Alcantarilla", role: "Lead Programmer" },
+                    { name: "Jimena Camargo Cerezo", role: "Art Director" },
+                    { name: "Mildred González Cerda", role: "Narrative Designer" },
+                    { name: "Nina López Guzmán", role: "UI/UX Designer" },
+                    { name: "Isabel Vázquez Tello", role: "Marketing Director" }
+                ]
+            },
+            {
+                company: "Vagrant Lore Studios",
+                game: "Dragons and eternal shadows",
+                members: [
+                    { name: "Alejandra Domínguez Velázquez", role: "CEO" },
+                    { name: "Dores Gaetana Hernández Lozano", role: "Lead Programmer" },
+                    { name: "Frida Hernández Cervantes", role: "Art Director" },
+                    { name: "Ximena Medellín Torres", role: "Narrative Designer" },
+                    { name: "Lidia Conde Sánchez", role: "UI/UX Designer" }
+                ]
+            }
+        ];
+
+        let currentCompany = null;
+        let currentUser = null;
+        let targetUser = null;
+        let evalType = "";
+
+        // BANCO DE PREGUNTAS - AUTO-EVALUACIÓN
+        const selfQuestions = [
+            "¿Asistí puntualmente a todas las reuniones de equipo para el desarrollo del RPG?",
+            "¿Cumplí con las entregas de mi rol (assets, código, guion) en las fechas establecidas?",
+            "¿Mi trabajo (historia/arte) fue original y no copiado directamente de internet o IA sin edición?",
+            "¿Utilicé la IA de manera ética, usándola como asistente y no para hacer todo mi trabajo?",
+            "¿Mantuve una comunicación respetuosa y constante con mis compañeros?",
+            "¿Colaboré activamente en la resolución de problemas (bugs, diseño) fuera de mi área específica?",
+            "¿Acepté feedback de mis compañeros (especialmente del CEO) para mejorar mi parte del juego?",
+            "¿Mantuve mis archivos organizados y accesibles para el resto del equipo?",
+            "¿Entendí y respeté la visión general del juego 'Pixel Art' definida por el equipo?",
+            "¿Me esforcé por aprender herramientas nuevas (Piskel, Tkinter, Python) necesarias para el proyecto?"
+        ];
+
+        // PREGUNTAS POR ROL - EVALUACIÓN DE COMPAÑEROS
+        const roleQuestions = {
+            "CEO": [
+                "¿Lideró al equipo de manera efectiva y mantuvo el orden?",
+                "¿Aseguró que todos cumplieran con los plazos (deadlines)?",
+                "¿Tuvo una comunicación clara sobre los objetivos del juego?",
+                "¿Resolvió conflictos internos de manera justa?",
+                "¿Preparó adecuadamente la presentación para el 'Shark Tank'?",
+                "¿Mostró organización en la gestión de las tareas de cada miembro?",
+                "¿Motivó al equipo cuando hubo dificultades técnicas?",
+                "¿Conocía el estado actual del proyecto en todo momento?",
+                "¿Fomentó un ambiente de trabajo colaborativo?",
+                "¿Asumió responsabilidad final por el producto entregado?"
+            ],
+            "Lead Programmer": [
+                "¿El código entregado (Python/Tkinter) funciona correctamente?",
+                "¿Logró integrar los gráficos y textos en la aplicación?",
+                "¿Solucionó los errores (bugs) de manera eficiente?",
+                "¿El movimiento y las mecánicas del juego se sienten fluidas?",
+                "¿Explicó al equipo cómo ejecutar el juego correctamente?",
+                "¿Mostró lógica y orden en la estructura de su programación?",
+                "¿Colaboró con el UI Designer para implementar los menús?",
+                "¿Utilizó la IA para corregir código sin depender ciegamente de ella?",
+                "¿Optimizó el juego para que no fuera lento?",
+                "¿Estuvo dispuesto a hacer cambios en el código según las necesidades de arte/historia?"
+            ],
+            "Art Director": [
+                "¿El arte (personajes, fondos) mantiene una estética Pixel Art consistente?",
+                "¿Los diseños son originales y creativos (no solo bajados de internet)?",
+                "¿Entregó los assets (imágenes) en el formato y tamaño correcto?",
+                "¿Usó herramientas como Piskel o GIMP de manera efectiva?",
+                "¿La paleta de colores es agradable y coherente en todo el juego?",
+                "¿Diseñó una interfaz (UI) visualmente clara junto al UI Designer?",
+                "¿Cumplió con la cantidad de assets requeridos para la historia?",
+                "¿Las animaciones (si las hubo) son claras?",
+                "¿Adaptó el arte según las limitaciones técnicas del programador?",
+                "¿Su trabajo visual mejora la experiencia del juego?"
+            ],
+            "Narrative Designer": [
+                "¿La historia del RPG es 100% original y creativa?",
+                "¿Los diálogos son coherentes y sin faltas de ortografía?",
+                "¿Los personajes tienen descripciones y personalidades claras?",
+                "¿El guion del juego tiene un inicio, desarrollo y final lógico?",
+                "¿Escribió el script para la presentación del equipo?",
+                "¿Colaboró con el Artista para que los personajes visuales coincidan con la historia?",
+                "¿Creó misiones u objetivos interesantes para el jugador?",
+                "¿Entregó los textos a tiempo para que el programador los insertara?",
+                "¿La narrativa encaja bien con el género RPG?",
+                "¿Ayudó a definir el 'Lore' del mundo del juego?"
+            ],
+            "UI/UX Designer": [
+                "¿Diseñó bocetos (wireframes) claros antes de programar?",
+                "¿Los menús y botones son fáciles de entender para el usuario?",
+                "¿La navegación por el juego es intuitiva?",
+                "¿Colaboró estrechamente con el Art Director para el estilo visual?",
+                "¿Ayudó al programador a ubicar los elementos en la pantalla?",
+                "¿Pensó en la experiencia del usuario (que no sea frustrante)?",
+                "¿Diseñó el flujo de pantallas (Inicio -> Juego -> Game Over)?",
+                "¿Mostró empatía hacia cómo el jugador interactúa con el juego?",
+                "¿Sus diseños facilitaron el uso de la aplicación?",
+                "¿Aportó ideas para mejorar la jugabilidad?"
+            ],
+            "Marketing Director": [
+                "¿Enfocó sus esfuerzos en la calidad de la presentación final?",
+                "¿Ayudó a vender la idea del juego de manera atractiva?",
+                "¿Creó materiales promocionales o visuales para el pitch?",
+                "¿Apoyó al CEO en la estructura del discurso?",
+                "¿Identificó los puntos fuertes del juego para destacarlos?",
+                "¿Analizó si el juego es atractivo para el público objetivo?",
+                "¿Ayudó a ensayar la presentación con el equipo?",
+                "¿Mantuvo una actitud proactiva aunque no programara/diseñara?",
+                "¿Comunicó claramente de qué trata el juego?",
+                "¿Colaboró con el equipo en tareas generales cuando fue necesario?"
+            ]
+        };
+
+        // INICIALIZACIÓN
+        window.onload = function () {
+            const select = document.getElementById('companySelect');
+            database.forEach((team, index) => {
+                let opt = document.createElement('option');
+                opt.value = index;
+                opt.innerHTML = `${team.company} - ${team.game}`;
+                select.appendChild(opt);
+            });
+        };
+
+        function loadMembers() {
+            const companyIdx = document.getElementById('companySelect').value;
+            if (companyIdx === "") return;
+
+            currentCompany = database[companyIdx];
+            const userSelect = document.getElementById('userSelect');
+            userSelect.innerHTML = '<option value="">-- Seleccionar tu nombre --</option>';
+
+            currentCompany.members.forEach((member, index) => {
+                let opt = document.createElement('option');
+                opt.value = index;
+                opt.innerHTML = `${member.name} (${member.role})`;
+                userSelect.appendChild(opt);
+            });
+
+            document.getElementById('step-identity').classList.remove('hidden');
+            document.getElementById('step-company').classList.add('hidden');
+        }
+
+        function detectUserRole() {
+            const userIdx = document.getElementById('userSelect').value;
+            if (userIdx === "") return;
+
+            currentUser = currentCompany.members[userIdx];
+            document.getElementById('myRoleDisplay').innerText = `✨ Tu rol: ${currentUser.role} ✨`;
+            document.getElementById('action-buttons').classList.remove('hidden');
+        }
+
+        function startSelfEval() {
+            targetUser = currentUser;
+            evalType = "auto";
+            generateForm(selfQuestions, `🛡️ Auto-Evaluación: ${currentUser.name}`);
+        }
+
+        function showTeammates() {
+            const peerSelect = document.getElementById('peerSelect');
+            peerSelect.innerHTML = '<option value="">-- Seleccionar compañero --</option>';
+
+            currentCompany.members.forEach((member) => {
+                if (member.name !== currentUser.name) {
+                    let opt = document.createElement('option');
+                    opt.value = member.name;
+                    opt.innerHTML = `${member.name} (${member.role})`;
+                    peerSelect.appendChild(opt);
+                }
+            });
+
+            document.getElementById('step-identity').classList.add('hidden');
+            document.getElementById('step-peer-select').classList.remove('hidden');
+        }
+
+        function startPeerEval() {
+            const targetName = document.getElementById('peerSelect').value;
+            if (targetName === "") {
+                alert("⚠️ Por favor selecciona un compañero");
+                return;
+            }
+
+            targetUser = currentCompany.members.find(m => m.name === targetName);
+            evalType = "peer";
+
+            let questions = roleQuestions[targetUser.role];
+            if (!questions) questions = selfQuestions;
+
+            generateForm(questions, `⚔️ Evaluando a: ${targetUser.name}`);
+        }
+
+        function generateForm(questionsList, title) {
+            document.getElementById('step-peer-select').classList.add('hidden');
+            document.getElementById('step-identity').classList.add('hidden');
+            document.getElementById('step-form').classList.remove('hidden');
+
+            document.getElementById('formTitle').innerText = title;
+            document.getElementById('targetName').innerText = `📌 ${targetUser.role}`;
+
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = "";
+
+            questionsList.forEach((q, i) => {
+                let div = document.createElement('div');
+                div.className = 'question-card';
+                div.innerHTML = `
+                <label>${i + 1}. ${q}</label>
+                <select class="score-input score-select">
+                    <option value="10" selected>⭐⭐⭐⭐⭐ Excelente (10)</option>
+                    <option value="9">⭐⭐⭐⭐ Muy Bien (9)</option>
+                    <option value="8">⭐⭐⭐ Bien (8)</option>
+                    <option value="7">⭐⭐ Regular (7)</option>
+                    <option value="6">⭐ Suficiente (6)</option>
+                    <option value="5">Insuficiente (5)</option>
+                    <option value="0">❌ Nulo (0)</option>
+                </select>
+            `;
+                container.appendChild(div);
+            });
+        }
+
+        function submitEvaluation() {
+            const inputs = document.querySelectorAll('.score-input');
+            let total = 0;
+            let questionCount = inputs.length;
+
+            // Calcular el total sumando todos los valores
+            inputs.forEach(input => {
+                const value = parseInt(input.value) || 0;
+                total += value;
+            });
+
+            let finalScore = total;
+
+            // Validación: verificar que el puntaje sea razonable
+            console.log(`Total questions: ${questionCount}, Total score: ${finalScore}`);
+
+            // Confirmación mejorada
+            const confirmMsg = `📊 RESUMEN DE EVALUACIÓN\n\n` +
+                `Evaluando a: ${targetUser.name}\n` +
+                `Rol: ${targetUser.role}\n` +
+                `Preguntas respondidas: ${questionCount}\n` +
+                `Puntaje total: ${finalScore}/100\n\n` +
+                `¿Deseas enviar esta evaluación?`;
+
+            if (!confirm(confirmMsg)) {
+                // Usuario canceló - no hacer nada
+                console.log("Usuario canceló el envío");
+                return;
+            }
+
+            // Mostrar pantalla de carga
+            document.getElementById('step-form').classList.add('hidden');
+            document.getElementById('step-loading').classList.remove('hidden');
+
+            let studentName = targetUser.name;
+            const url = `${SCRIPT_URL}?alumno=${encodeURIComponent(studentName)}&tipo=${evalType}&puntaje=${finalScore}`;
+
+            // Log para debugging
+            console.log("=== ENVIANDO EVALUACIÓN ===");
+            console.log("URL:", url);
+            console.log("Alumno:", studentName);
+            console.log("Tipo:", evalType);
+            console.log("Puntaje:", finalScore);
+            console.log("========================");
+
+            // Usar fetch con configuración mejorada
+            fetch(url, {
+                method: "GET",  // Cambiado a GET porque los parámetros están en la URL
+                redirect: 'follow'
+            })
+                .then(response => {
+                    console.log("Response status:", response.status);
+                    console.log("Response OK:", response.ok);
+                    return response.text();  // Primero obtener como texto para ver qué llega
+                })
+                .then(text => {
+                    console.log("Response text:", text);
+                    try {
+                        const data = JSON.parse(text);
+                        console.log("Parsed data:", data);
+
+                        if (data.result === "success") {
+                            alert("✅ Evaluación guardada correctamente en Google Sheets!");
+                            resetApp();
+                        } else {
+                            alert("❌ Error al guardar: " + (data.error || "Desconocido"));
+                            console.error("Error data:", data);
+                            document.getElementById('step-loading').classList.add('hidden');
+                            document.getElementById('step-form').classList.remove('hidden');
+                        }
+                    } catch (e) {
+                        console.error("Error parsing JSON:", e);
+                        console.error("Raw response:", text);
+                        alert("❌ Error: La respuesta del servidor no es válida. Revisa la consola (F12) para más detalles.");
+                        document.getElementById('step-loading').classList.add('hidden');
+                        document.getElementById('step-form').classList.remove('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error("Fetch error:", error);
+                    alert("❌ Error de conexión: " + error.message + "\n\nVerifica:\n1. Tu conexión a internet\n2. Que el Apps Script esté deployed como 'Web app'\n3. Que el permiso sea 'Anyone'\n\nRevisa la consola (F12) para más detalles.");
+                    document.getElementById('step-loading').classList.add('hidden');
+                    document.getElementById('step-form').classList.remove('hidden');
+                });
+        }
+
+        function resetApp() {
+            location.reload();
+        }
+
+    </script>
+
+</body>
+
+</html>
