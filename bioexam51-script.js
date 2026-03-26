@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 1, name: "Nasal Cavity", pctX: 40.0, pctY: 18.0 },
         { id: 2, name: "Oral Cavity", pctX: 43.0, pctY: 25.0 },
         { id: 3, name: "Epiglotis", pctX: 53.5, pctY: 28.8 },
-        { id: 4, name: "Pharynx", pctX: 56.5, pctY: 22.8 },
+        { id: 4, name: "Pharynx", pctX: 49.0, pctY: 21.0 },
         { id: 5, name: "Diaphragm", pctX: 55.5, pctY: 83.5 },
         { id: 6, name: "Upper right lobe", pctX: 44.0, pctY: 56.5 },
         { id: 7, name: "Middle lobe", pctX: 43.5, pctY: 70.5 },
@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const partsImg2 = [
         { id: 11, name: "Larynx", pctX: 47.7, pctY: 13.0 },
         { id: 12, name: "Trachea", pctX: 48.5, pctY: 38.9 },
-        { id: 13, name: "Carina", pctX: 48.5, pctY: 60.0 },
+        { id: 13, name: "Carina", pctX: 48.5, pctY: 50.0 },
         { id: 14, name: "Bronchi", pctX: 30.8, pctY: 68.7 },
         { id: 15, name: "Broncheoles", pctX: 78.5, pctY: 84.0 }
     ];
@@ -269,6 +269,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderInputs = () => {
         inputsBox.innerHTML = '';
         const allParts = [...partsImg1, ...partsImg2];
+        // Shuffle the inputs alphabetically to scramble the answers explicitly
+        allParts.sort((a, b) => a.name.localeCompare(b.name));
         allParts.forEach(p => {
             const wrapper = document.createElement('div');
             wrapper.className = 'diag-part';
