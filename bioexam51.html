@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biology Exam - Unit 5</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Roboto:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="bioexam51-styles.css">
+    <!-- Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+
+<body>
+    <header>
+        <div class="logo-container">
+            <h1 class="header-title">Instituto Mexicano Madero (IMM) - Secundaria</h1>
+            <p class="header-subtitle">Biology UNIT 5: Respiratory System - Exam Type: Unique</p>
+            <p class="cycle-info">Ciclo escolar 2025-2026</p>
+        </div>
+    </header>
+
+    <!-- Login Container -->
+    <main class="container">
+        <div id="login-container" class="active card login-card">
+            <div class="login-logos">
+                <img src="https://immsec.neocities.org/IMM.png" alt="IMM Logo" class="login-logo-img">
+                <img src="https://immsec.neocities.org/Biology%20title.png" alt="Biology Exam" class="login-banner-img">
+            </div>
+            <h2>Bienvenido al Examen</h2>
+            <p>Por favor ingresa tu matrícula (Student ID) para comenzar.</p>
+            <div class="input-group">
+                <input type="text" id="student-id" placeholder="e.g. 0000001" autocomplete="off" required>
+            </div>
+            <button id="verify-id-btn" class="primary-btn">Verify ID</button>
+            <p id="login-error" class="error-msg"></p>
+        </div>
+
+        <!-- Login Confirm Container -->
+        <div id="login-confirm" class="hidden card" style="text-align: center;">
+            <h2>¿Eres tú?</h2>
+            <h3 id="confirm-name">--</h3>
+            <p>Grado: <strong id="confirm-grade">--</strong> | Grupo: <strong id="confirm-group">--</strong></p>
+            <p>Confirma que estos son tus datos para iniciar el examen.</p>
+            <button id="start-exam-btn" class="primary-btn" style="margin-top: 20px;">Sí, iniciar examen</button>
+            <button id="cancel-exam-btn" class="primary-btn"
+                style="margin-top: 20px; background-color: var(--inst-red); margin-left: 10px;">No soy yo</button>
+        </div>
+
+        <!-- Main Exam Container -->
+        <div id="exam-container" class="hidden">
+
+            <div class="student-info-bar">
+                <span>Name: <strong id="display-name"></strong></span>
+                <span>Date: <strong id="display-date"></strong></span>
+                <span>ID: <strong id="display-id"></strong></span>
+                <span>Grade: <strong id="display-grade"></strong></span>
+                <span>Group: <strong id="display-group"></strong></span>
+            </div>
+
+            <p class="instructions">Instructions.- Read carefully each section and answer correctly.</p>
+
+            <div id="steps-container">
+                <!-- STEP 1: Q1 -->
+                <div class="step-card active" id="step-1">
+                    <h3>Section I: Open Questions (1/5)</h3>
+                    <div class="question-block">
+                        <label>1. What is the main function of the respiratory system?</label>
+                        <input type="text" id="q1" class="q-input" autocomplete="off">
+                        <p class="feedback-msg" id="fb-1"></p>
+                    </div>
+                    <button class="next-btn primary-btn" data-step="1">Next</button>
+                </div>
+
+                <!-- STEP 2: Q2 -->
+                <div class="step-card hidden" id="step-2">
+                    <h3>Section I: Open Questions (2/5)</h3>
+                    <div class="question-block">
+                        <label>2. Which is the main organ of the respiratory system?</label>
+                        <input type="text" id="q2" class="q-input" autocomplete="off">
+                        <p class="feedback-msg" id="fb-2"></p>
+                    </div>
+                    <button class="next-btn primary-btn" data-step="2">Next</button>
+                </div>
+
+                <!-- STEP 3: Q3 -->
+                <div class="step-card hidden" id="step-3">
+                    <h3>Section I: Open Questions (3/5)</h3>
+                    <div class="question-block">
+                        <label>3. What is the Minimal Functional Unit (MFU) of the respiratory system?</label>
+                        <input type="text" id="q3" class="q-input" autocomplete="off">
+                        <p class="feedback-msg" id="fb-3"></p>
+                    </div>
+                    <button class="next-btn primary-btn" data-step="3">Next</button>
+                </div>
+
+                <!-- STEP 4: Q4 -->
+                <div class="step-card hidden" id="step-4">
+                    <h3>Section I: Open Questions (4/5)</h3>
+                    <div class="question-block">
+                        <label>4. What type of barrier are the mucous or boogers (only in the nose)?</label>
+                        <input type="text" id="q4" class="q-input" autocomplete="off">
+                        <p class="feedback-msg" id="fb-4"></p>
+                    </div>
+                    <button class="next-btn primary-btn" data-step="4">Next</button>
+                </div>
+
+                <!-- STEP 5: Q5 -->
+                <div class="step-card hidden" id="step-5">
+                    <h3>Section I: Open Questions (5/5)</h3>
+                    <div class="question-block">
+                        <label>5. What type of barrier are the nostril hairs?</label>
+                        <input type="text" id="q5" class="q-input" autocomplete="off">
+                        <p class="feedback-msg" id="fb-5"></p>
+                    </div>
+                    <button class="next-btn primary-btn" data-step="5">Next</button>
+                </div>
+
+                <!-- STEP 6: MATCHING -->
+                <div class="step-card hidden" id="step-6">
+                    <h3>Section II: Matching</h3>
+                    <p>Read the concepts below and match with the definition. <strong>(18 Pts/ 2 Pts Each)</strong></p>
+                    <table class="matching-table">
+                        <tr>
+                            <th>Concept</th>
+                            <th>Definition</th>
+                        </tr>
+                        <tr>
+                            <td><select class="match-select" id="m1">
+                                    <option value="">--</option>
+                                </select></td>
+                            <td>Tube that conducts air directly into the lung</td>
+                        </tr>
+                        <tr>
+                            <td><select class="match-select" id="m2">
+                                    <option value="">--</option>
+                                </select></td>
+                            <td>Tube located underneath the larynx that is composed of C-shape rings</td>
+                        </tr>
+                        <tr>
+                            <td><select class="match-select" id="m3">
+                                    <option value="">--</option>
+                                </select></td>
+                            <td>Cells that create surfactant</td>
+                        </tr>
+                        <tr>
+                            <td><select class="match-select" id="m4">
+                                    <option value="">--</option>
+                                </select></td>
+                            <td>Sponge-like organ</td>
+                        </tr>
+                        <tr>
+                            <td><select class="match-select" id="m5">
+                                    <option value="">--</option>
+                                </select></td>
+                            <td>Little sac that makes the hematosis</td>
+                        </tr>
+                        <tr>
+                            <td><select class="match-select" id="m6">
+                                    <option value="">--</option>
+                                </select></td>
+                            <td>Cells that create the alveoli structure</td>
+                        </tr>
+                        <tr>
+                            <td><select class="match-select" id="m7">
+                                    <option value="">--</option>
+                                </select></td>
+                            <td>Tunnel located back in the mouth</td>
+                        </tr>
+                        <tr>
+                            <td><select class="match-select" id="m8">
+                                    <option value="">--</option>
+                                </select></td>
+                            <td>Contains the vocal cords</td>
+                        </tr>
+                        <tr>
+                            <td><select class="match-select" id="m9">
+                                    <option value="">--</option>
+                                </select></td>
+                            <td>Chamber that is divided by a septum and connects the exterior air with the interior</td>
+                        </tr>
+                    </table>
+                    <p class="feedback-msg" id="fb-6"></p>
+                    <button class="next-btn primary-btn" data-step="6">Next</button>
+                </div>
+
+                <!-- STEP 7: DIAGRAMS -->
+                <div class="step-card hidden" id="step-7">
+                    <h3>Section III: Diagram Identification</h3>
+                    <p>Identify the parts of the respiratory system from the diagram below. Select the correct number
+                        for each anatomical part.</p>
+
+                    <div class="diagrams-wrapper">
+                        <div class="diagram-box" style="position: relative; display: inline-block; width: 100%;">
+                            <img src="Captura de pantalla 2026-03-25 201538.png" id="main-diagram"
+                                alt="Respiratory System" style="width: 100%; height: auto; display: block;">
+                            <div id="hotspots-container"></div>
+                        </div>
+                    </div>
+
+                    <div class="diagram-inputs" id="diagram-inputs-container">
+                        <!-- JS Will inject 15 dropdowns here -->
+                    </div>
+
+                    <div style="margin-top:20px; text-align:center;">
+                        <button id="submit-exam-btn" class="primary-btn">Finish & Submit</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <p id="submit-msg" class="info-msg"></p>
+        </div>
+
+        <div id="results-container" class="hidden card text-center">
+            <h2>Exam Completed!</h2>
+            <p>Your results have been recorded.</p>
+            <div id="final-score" class="score-display"></div>
+            <p>You may now close this page.</p>
+        </div>
+    </main>
+
+    <!-- Rain Overlay -->
+    <div id="rain-container" class="rain-overlay hidden"></div>
+
+    <footer>
+        <p>copyright Jaime Dominguez</p>
+    </footer>
+
+    <script src="bioexam51-script.js"></script>
+</body>
+
+</html>
