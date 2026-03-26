@@ -115,6 +115,10 @@ document.addEventListener('DOMContentLoaded', () => {
         displayId.textContent = currentStudent.matricula;
         displayGradeBar.textContent = currentStudent.grado;
         displayGroupBar.textContent = currentStudent.grupo;
+
+        if (parseInt(currentStudent.grado) === 1 && currentStudent.grupo.toUpperCase() === 'D') {
+            translateToSpanish();
+        }
     });
 
     // --- Animations ---
@@ -151,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const answers = {
         1: ['gas', 'oxygen', 'oxigeno', 'respirar', 'breathe', 'exchange'],
         2: ['lung', 'pulmones', 'pulmon', 'lungs'],
-        3: ['pneumocyte', 'neumocito'], // User updated MFU
+        3: ['pneumocyte', 'neumocito', 'umf', 'unidad'], // User updated MFU
         4: ['chemical', 'quimica', 'químico', 'quimico'],
         5: ['physical', 'fisica', 'física', 'fisico']
     };
@@ -242,11 +246,11 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     const partsImg2 = [
-        { id: 11, name: "Larynx", pctX: 47.7, pctY: 13.0 },
+        { id: 11, name: "Larynx", pctX: 47.7, pctY: 9.0 },
         { id: 12, name: "Trachea", pctX: 48.5, pctY: 38.9 },
         { id: 13, name: "Carina", pctX: 48.5, pctY: 50.0 },
-        { id: 14, name: "Bronchi", pctX: 30.8, pctY: 68.7 },
-        { id: 15, name: "Broncheoles", pctX: 78.5, pctY: 84.0 }
+        { id: 14, name: "Bronchi", pctX: 34.0, pctY: 57.0 },
+        { id: 15, name: "Broncheoles", pctX: 74.0, pctY: 74.0 }
     ];
 
     const diag1 = document.getElementById('diagram-1');
@@ -341,5 +345,85 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('step-7').classList.add('hidden');
         resultsContainer.classList.remove('hidden');
         finalScoreEl.innerHTML = `${score} / ${maxScore} pts<br><span style="font-size: 1.5rem; color: #555;">Final Grade: ${grade}</span>`;
+    }
+
+    function translateToSpanish() {
+        const instList = document.querySelectorAll('p');
+        if (instList[0] && instList[0].textContent.includes("Instructions")) {
+            instList[0].textContent = "Instrucciones.- Lee cuidadosamente cada sección y responde correctamente.";
+        }
+
+        const qTexts = [
+            "¿Cuál es la función principal del sistema respiratorio?",
+            "¿Cuál es el órgano principal del sistema respiratorio?",
+            "¿Cuál es la Unidad Mínima Funcional (UMF) del sistema respiratorio?",
+            "¿Qué tipo de barrera química es el moco (solo en la nariz)?",
+            "¿Qué tipo de barrera son los vellos nasales?"
+        ];
+
+        for (let i = 1; i <= 5; i++) {
+            const h3 = document.querySelector(`#step-${i} h3`);
+            const p = document.querySelector(`#step-${i} p`);
+            if (h3) h3.textContent = "Sección I: Preguntas Abiertas";
+            if (p) p.textContent = qTexts[i - 1];
+        }
+
+        const s6h3 = document.querySelector('#step-6 h3');
+        if (s6h3) s6h3.textContent = "Sección II: Relacionar";
+        const s6p = document.querySelector('#step-6 p');
+        if (s6p) s6p.innerHTML = "Lee los conceptos de abajo y relaciónalos con la definición. <strong>(18 Pts/ 2 Pts Cada Uno)</strong>";
+
+        const ths = document.querySelectorAll('#step-6 th');
+        if (ths.length > 1) { ths[0].textContent = "Concepto"; ths[1].textContent = "Definición"; }
+
+        const defs = document.querySelectorAll('#step-6 td:nth-child(2)');
+        const esDefs = [
+            "Vías respiratorias que conducen el aire de la tráquea a los pulmones.",
+            "Conducto que transporta el aire de la laringe a los bronquios.",
+            "Célula alveolar responsable de producir el factor surfactante para reducir la tensión superficial y prevenir el colapso alveolar.",
+            "Órgano principal del sistema respiratorio responsable del intercambio de gases.",
+            "Estructuras pequeñas en los pulmones donde ocurre el intercambio de oxígeno y dióxido de carbono.",
+            "Célula epitelial que forma la mayor parte de la superficie alveolar y facilita el intercambio de gases.",
+            "Conducto que conecta la cavidad nasal y oral con la laringe y el esófago.",
+            "Estructura que contiene las cuerdas vocales y regula el paso del aire a la tráquea.",
+            "Órgano que filtra, humedece y calienta el aire antes de que llegue a los pulmones."
+        ];
+        defs.forEach((td, i) => { if (esDefs[i]) td.textContent = esDefs[i]; });
+
+        const matchConceptsEs = {
+            "Lungs": "Pulmones", "Alveoli": "Alveolos", "Bronchi": "Bronquios", "Nose": "Nariz", "Pharynx": "Faringe",
+            "Larynx": "Laringe", "Trachea": "Tráquea", "Type 1 Pneumocyte": "Neumocito Tipo 1", "Type 2 Pneumocyte": "Neumocito Tipo 2"
+        };
+        document.querySelectorAll('.match-select option').forEach(opt => {
+            if (matchConceptsEs[opt.value]) opt.textContent = matchConceptsEs[opt.value];
+        });
+
+        const s7h3 = document.querySelector('#step-7 h3');
+        if (s7h3) s7h3.textContent = "Sección III: Identificación de Diagrama";
+        const s7p = document.querySelector('#step-7 p');
+        if (s7p) s7p.textContent = "Identifica las partes del sistema respiratorio en el diagrama. Selecciona el número correcto para cada parte anatómica.";
+
+        const s7h4s = document.querySelectorAll('#step-7 h4');
+        if (s7h4s[0]) s7h4s[0].textContent = "Esquema del Sistema Respiratorio";
+        if (s7h4s[1]) s7h4s[1].textContent = "Diagrama de los Pulmones";
+
+        const submitBtnReal = document.getElementById('submit-exam-btn');
+        if (submitBtnReal) submitBtnReal.textContent = "Finalizar y Enviar";
+
+        const diagConceptsEs = {
+            "Nasal Cavity": "Cavidad Nasal", "Oral Cavity": "Cavidad Oral", "Epiglotis": "Epiglotis",
+            "Pharynx": "Faringe", "Diaphragm": "Diafragma", "Upper right lobe": "Lóbulo superior derecho",
+            "Middle lobe": "Lóbulo medio", "Lower right lobe": "Lóbulo inferior derecho",
+            "Upper left lobe": "Lóbulo superior izquierdo", "Lower left lobe": "Lóbulo inferior izquierdo",
+            "Larynx": "Laringe", "Trachea": "Tráquea", "Carina": "Carina",
+            "Bronchi": "Bronquios", "Broncheoles": "Bronquiolos"
+        };
+
+        partsImg1.forEach(p => p.name = diagConceptsEs[p.name] || p.name);
+        partsImg2.forEach(p => p.name = diagConceptsEs[p.name] || p.name);
+
+        if (typeof renderInputs === 'function') {
+            renderInputs(); // Refresh dropdowns with Spanish text
+        }
     }
 });
