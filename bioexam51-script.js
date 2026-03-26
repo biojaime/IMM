@@ -228,73 +228,70 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Diagram Logic Generation ---
-    const diagramParts = [
-        { id: 1, name: "Nasal Cavity", x: 611, y: 310 },
-        { id: 2, name: "Oral Cavity", x: 622, y: 349 },
-        { id: 3, name: "Epiglotis", x: 664, y: 373 },
-        { id: 4, name: "Pharynx", x: 676, y: 337 },
-        { id: 5, name: "Diaphragm", x: 672, y: 701 },
-        { id: 6, name: "Upper right lobe", x: 626, y: 539 },
-        { id: 7, name: "Middle lobe", x: 624, y: 623 },
-        { id: 8, name: "Lower right lobe", x: 565, y: 654 },
-        { id: 9, name: "Upper left lobe", x: 737, y: 564 },
-        { id: 10, name: "Lower left lobe", x: 774, y: 660 },
-        { id: 11, name: "Larynx", x: 1217, y: 222 },
-        { id: 12, name: "Trachea", x: 1220, y: 364 },
-        { id: 13, name: "Carina", x: 1220, y: 481 },
-        { id: 14, name: "Bronchi", x: 1158, y: 528 },
-        { id: 15, name: "Broncheoles", x: 1325, y: 613 }
+    const partsImg1 = [
+        { id: 1, name: "Nasal Cavity", pctX: 40.0, pctY: 18.0 },
+        { id: 2, name: "Oral Cavity", pctX: 43.0, pctY: 25.0 },
+        { id: 3, name: "Epiglotis", pctX: 53.5, pctY: 28.8 },
+        { id: 4, name: "Pharynx", pctX: 56.5, pctY: 22.8 },
+        { id: 5, name: "Diaphragm", pctX: 55.5, pctY: 83.5 },
+        { id: 6, name: "Upper right lobe", pctX: 44.0, pctY: 56.5 },
+        { id: 7, name: "Middle lobe", pctX: 43.5, pctY: 70.5 },
+        { id: 8, name: "Lower right lobe", pctX: 28.7, pctY: 75.6 },
+        { id: 9, name: "Upper left lobe", pctX: 71.7, pctY: 60.6 },
+        { id: 10, name: "Lower left lobe", pctX: 81.0, pctY: 76.6 }
     ];
 
-    const mainDiagram = document.getElementById('main-diagram');
-    const hotspotsContainer = document.getElementById('hotspots-container');
-    const diagramInputsContainer = document.getElementById('diagram-inputs-container');
+    const partsImg2 = [
+        { id: 11, name: "Larynx", pctX: 47.7, pctY: 13.0 },
+        { id: 12, name: "Trachea", pctX: 48.5, pctY: 38.9 },
+        { id: 13, name: "Carina", pctX: 48.5, pctY: 60.0 },
+        { id: 14, name: "Bronchi", pctX: 30.8, pctY: 68.7 },
+        { id: 15, name: "Broncheoles", pctX: 78.5, pctY: 84.0 }
+    ];
 
-    if (mainDiagram && hotspotsContainer && diagramInputsContainer) {
-        const initDiagram = () => {
-            // Check if coordinates were based on a 1366 or 1440 screen screenshot
-            // Based on x=1325, image is likely around 1366px or 1440px or larger
-            // We use naturalWidth, but for screenshots it might be slightly off.
-            // Using 1366x768 as a sensible default if naturalWidth is 0.
-            let natW = mainDiagram.naturalWidth || 1366;
-            let natH = mainDiagram.naturalHeight || 768;
+    const diag1 = document.getElementById('diagram-1');
+    const diag2 = document.getElementById('diagram-2');
+    const hot1 = document.getElementById('hotspots-1');
+    const hot2 = document.getElementById('hotspots-2');
+    const inputsBox = document.getElementById('diagram-inputs-container');
 
-            // Render Hotspots & Dropdowns
-            hotspotsContainer.innerHTML = '';
-            diagramInputsContainer.innerHTML = '';
+    const renderHotspots = (parts, container) => {
+        parts.forEach(p => {
+            const dot = document.createElement('div');
+            dot.className = 'hotspot';
+            dot.textContent = p.id;
+            dot.style.left = p.pctX + '%';
+            dot.style.top = p.pctY + '%';
+            container.appendChild(dot);
+        });
+    };
 
-            diagramParts.forEach(part => {
-                const dot = document.createElement('div');
-                dot.className = 'hotspot';
-                dot.textContent = part.id;
-                dot.style.left = (part.x / natW) * 100 + '%';
-                dot.style.top = (part.y / natH) * 100 + '%';
-                hotspotsContainer.appendChild(dot);
+    const renderInputs = () => {
+        inputsBox.innerHTML = '';
+        const allParts = [...partsImg1, ...partsImg2];
+        allParts.forEach(p => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'diag-part';
+            wrapper.innerHTML = `<label>${p.name}:</label>`;
 
-                const wrapper = document.createElement('div');
-                wrapper.className = 'diag-part';
-                wrapper.innerHTML = `<label>${part.name}:</label>`;
+            const select = document.createElement('select');
+            select.className = 'diag-select';
+            select.dataset.targetId = p.id;
 
-                const select = document.createElement('select');
-                select.className = 'diag-select';
-                select.dataset.targetId = part.id;
+            let optionsHtml = `<option value="">--</option>`;
+            for (let i = 1; i <= 15; i++) {
+                optionsHtml += `<option value="${i}">${i}</option>`;
+            }
+            select.innerHTML = optionsHtml;
+            wrapper.appendChild(select);
+            inputsBox.appendChild(wrapper);
+        });
+    };
 
-                let optionsHtml = `<option value="">--</option>`;
-                for (let i = 1; i <= 15; i++) {
-                    optionsHtml += `<option value="${i}">${i}</option>`;
-                }
-                select.innerHTML = optionsHtml;
-
-                wrapper.appendChild(select);
-                diagramInputsContainer.appendChild(wrapper);
-            });
-        };
-
-        if (mainDiagram.complete) {
-            initDiagram();
-        } else {
-            mainDiagram.onload = initDiagram;
-        }
+    if (hot1 && hot2) {
+        renderHotspots(partsImg1, hot1);
+        renderHotspots(partsImg2, hot2);
+        renderInputs();
     }
 
 
