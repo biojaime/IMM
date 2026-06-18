@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Examen Ordinario de Biología 2026. Sistema de evaluación académica digital.">
+    <title>Examen Ordinario de Biología 2026</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-gradient: radial-gradient(circle at 50% 50%, #151a30 0%, #0a0d1a 100%);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-accent: rgba(16, 185, 129, 0.15);
+            --accent-emerald: #10b981;
+            --accent-cyan: #06b6d4;
+            --accent-glow: #10b98144;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --error-color: #ef4444;
+            --success-color: #10b981;
+            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --transition-speed: 0.3s;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+            user-select: none; /* Evita copiar preguntas durante el examen */
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Efectos de luces biológicas de fondo */
+        .bio-glow {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-glow) 0%, rgba(0,0,0,0) 70%);
+            filter: blur(50px);
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.6;
+            animation: floatGlow 12s infinite ease-in-out;
+        }
+
+        .bio-glow-1 {
+            top: -100px;
+            left: -100px;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, rgba(0,0,0,0) 70%);
+        }
+
+        .bio-glow-2 {
+            bottom: -150px;
+            right: -100px;
+        }
+
+        @keyframes floatGlow {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, -20px) scale(1.1); }
+        }
+
+        /* Contenedores Principales */
+        .app-container {
+            width: 90%;
+            max-width: 1000px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 40px;
+            box-shadow: var(--card-shadow);
+            z-index: 1;
+            transition: all var(--transition-speed) ease-in-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Encabezado */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff 30%, var(--accent-cyan) 70%, var(--accent-emerald) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        /* Pantallas */
+        .screen {
+            display: none;
+            opacity: 0;
+            transform: translateY(15px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .screen.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Formulario de Login */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .app-container {
+                padding: 24px;
+                width: 95%;
+            }
+            header h1 {
+                font-size: 1.8rem;
+            }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group input, .input-group select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            padding: 14px 18px;
+            border-radius: 12px;
+            color: var(--text-main);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.25s ease;
+        }
+
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.25);
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            border-color: var(--accent-cyan);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 12px rgba(6, 182, 212, 0.2);
+        }
+
+        .input-group select option {
+            background-color: #0e1222;
+            color: var(--text-main);
+        }
+
+        /* Botones */
+        .btn {
+            background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-emerald) 100%);
+            color: #0b0f19;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+            filter: brightness(1.1);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            box-shadow: none;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: none;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        /* Mensaje de Error */
+        .error-message {
+            color: var(--error-color);
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            margin-top: 15px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+
+        /* Pantalla del Examen - Layout de 2 columnas */
+        .exam-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .exam-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Panel Lateral (Navegación) */
+        .nav-panel {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: fit-content;
+        }
+
+        .student-badge {
+            background: var(--glass-accent);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .student-badge strong {
+            color: var(--accent-emerald);
+            display: block;
+            font-size: 1rem;
+            margin-bottom: 2px;
+        }
+
+        .question-grid-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .question-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .question-grid::-webkit-scrollbar {
+            width: 4px;
+        }
+        .question-grid::-webkit-scrollbar-thumb {
+            background: var(--glass-border);
+            border-radius: 10px;
+        }
+
+        .grid-item {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .grid-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--text-muted);
+        }
+
+        .grid-item.current {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 8px rgba(6, 182, 212, 0.3);
+            background: rgba(6, 182, 212, 0.1);
+            color: var(--accent-cyan);
+            font-weight: 700;
+        }
+
+        .grid-item.answered {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--accent-emerald);
+            color: var(--accent-emerald);
+        }
+
+        /* Area Principal de la Pregunta */
+        .question-area {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 400px;
+        }
+
+        .progress-container {
+            margin-bottom: 20px;
+        }
+
+        .progress-bar-wrapper {
+            background: rgba(255, 255, 255, 0.05);
+            height: 8px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, var(--accent-cyan) 0%, var(--accent-emerald) 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .question-section-title {
+            color: var(--accent-cyan);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            font-weight: 500;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .option-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            padding: 16px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+        }
+
+        .option-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateX(3px);
+        }
+
+        .option-item.selected {
+            background: rgba(16, 185, 129, 0.08);
+            border-color: var(--accent-emerald);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+        }
+
+        .option-letter {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .option-item.selected .option-letter {
+            background: var(--accent-emerald);
+            border-color: var(--accent-emerald);
+            color: #0b0f19;
+        }
+
+        .option-text {
+            font-size: 1.05rem;
+            line-height: 1.4;
+            flex: 1;
+        }
+
+        .nav-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1.2fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .nav-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Pantalla Congelada / Bloqueada */
+        .lock-container {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .lock-icon-wrapper {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px dashed var(--error-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px auto;
+            color: var(--error-color);
+            animation: pulseGlow 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 0 20px 5px rgba(239, 68, 68, 0.2); }
+        }
+
+        .lock-title {
+            font-size: 2rem;
+            color: #f87171;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .lock-subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto 30px auto;
+            line-height: 1.5;
+        }
+
+        .result-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            padding: 30px;
+            max-width: 500px;
+            margin: 0 auto 30px auto;
+            text-align: left;
+            position: relative;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .result-label {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .result-val {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .score-val {
+            font-size: 1.8rem;
+            color: var(--accent-cyan);
+            font-weight: 700;
+        }
+
+        .unlock-area {
+            max-width: 400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            padding: 24px;
+            border-radius: 16px;
+        }
+
+        /* Modal de Confirmación */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 13, 26, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: #151a30;
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 35px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .modal-desc {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        /* Desactivar clicks y atajos durante congelación */
+        .frozen-mode {
+            pointer-events: none;
+        }
+
+        .frozen-mode .unlock-area {
+            pointer-events: auto !important; /* Permitir ingresar contraseña */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bio-glow bio-glow-1"></div>
+    <div class="bio-glow bio-glow-2"></div>
+
+    <div class="app-container">
+        
+        <!-- PANTALLA 1: INGRESO DE CREDENCIALES -->
+        <section id="login-screen" class="screen active">
+            <header>
+                <h1 id="login-title">Examen de Biología</h1>
+                <p id="login-subtitle">Ingresa tus datos para comenzar la evaluación</p>
+            </header>
+
+            <div class="form-grid">
+                <div class="input-group">
+                    <label for="access-code" id="lbl-access-code">Código de Acceso</label>
+                    <input type="text" id="access-code" placeholder="Código de acceso del examen" autocomplete="off" required>
+                </div>
+                <div class="input-group">
+                    <label for="student-name" id="lbl-student-name">Nombre(s)</label>
+                    <input type="text" id="student-name" placeholder="Tu nombre" autocomplete="off" required>
+                </div>
+                <div class="input-group">
+                    <label for="paternal-lastname" id="lbl-paternal-lastname">Apellido Paterno</label>
+                    <input type="text" id="paternal-lastname" placeholder="Apellido paterno" autocomplete="off" required>
+                </div>
+                <div class="input-group">
+                    <label for="maternal-lastname" id="lbl-maternal-lastname">Apellido Materno</label>
+                    <input type="text" id="maternal-lastname" placeholder="Apellido materno" autocomplete="off" required>
+                </div>
+                <div class="input-group">
+                    <label for="student-grade" id="lbl-student-grade">Grado</label>
+                    <select id="student-grade">
+                        <option value="1ro" selected>1ro</option>
+                        <option value="2do">2do</option>
+                        <option value="3ro">3ro</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="student-group" id="lbl-student-group">Grupo</label>
+                    <select id="student-group" onchange="handleGroupChange()">
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="D">D</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn" id="btn-start-exam" onclick="startExam()">
+                <span>Comenzar Examen</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+
+            <div id="login-error" class="error-message">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span id="login-error-text">Código de acceso incorrecto.</span>
+            </div>
+        </section>
+
+        <!-- PANTALLA 2: INTERFAZ DEL EXAMEN -->
+        <section id="exam-screen" class="screen">
+            <header style="margin-bottom: 20px; text-align: left;">
+                <h1 id="exam-header-title" style="font-size: 1.8rem;">Examen de Biología: Ordinario 2026</h1>
+                <div class="progress-container">
+                    <div class="progress-stats">
+                        <span id="progress-text">Pregunta 1 de 40</span>
+                        <span id="progress-percentage">0% Completado</span>
+                    </div>
+                    <div class="progress-bar-wrapper">
+                        <div id="exam-progress-bar" class="progress-bar"></div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="exam-layout">
+                <!-- Panel lateral de navegación rápida -->
+                <aside class="nav-panel">
+                    <div class="student-badge">
+                        <span id="badge-title" style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 5px;">Alumno</span>
+                        <strong id="badge-student-name">Nombre Alumno</strong>
+                        <span id="badge-details">Grado: 1ro | Grupo: A</span>
+                    </div>
+                    <div>
+                        <div class="question-grid-title" id="lbl-question-grid">Navegación de Preguntas</div>
+                        <div class="question-grid" id="question-nav-grid">
+                            <!-- Generado dinámicamente -->
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Área principal de la pregunta -->
+                <main class="question-area">
+                    <div>
+                        <div class="question-section-title" id="question-section-name">Sistema Respiratorio</div>
+                        <div class="question-text" id="question-display-text">Cargando pregunta...</div>
+                        
+                        <div class="options-list" id="options-display-list">
+                            <!-- Opciones generadas dinámicamente -->
+                        </div>
+                    </div>
+
+                    <div class="nav-buttons">
+                        <button class="btn btn-secondary" id="btn-prev" onclick="navigateQuestion(-1)">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                            <span id="btn-text-prev">Anterior</span>
+                        </button>
+                        <button class="btn" id="btn-next" onclick="navigateQuestion(1)">
+                            <span id="btn-text-next">Siguiente</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                        </button>
+                        <button class="btn btn-danger" id="btn-finish" onclick="openConfirmModal()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            <span id="btn-text-finish">Terminar Examen</span>
+                        </button>
+                    </div>
+                </main>
+            </div>
+        </section>
+
+        <!-- PANTALLA 3: PANTALLA CONGELADA / BLOQUEO DOCENTE -->
+        <section id="lock-screen" class="screen">
+            <div class="lock-container">
+                <div class="lock-icon-wrapper">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </div>
+                
+                <h2 class="lock-title" id="lock-header-title">Evaluación Finalizada y Bloqueada</h2>
+                <p class="lock-subtitle" id="lock-header-subtitle">
+                    Los datos del examen han sido consolidados y enviados. Esta pantalla está bloqueada y requiere desbloqueo por parte del docente.
+                </p>
+
+                <div class="result-card">
+                    <div class="result-row">
+                        <span class="result-label" id="lbl-res-student">Alumno:</span>
+                        <span class="result-val" id="res-student-name">-</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label" id="lbl-res-grade-group">Grado y Grupo:</span>
+                        <span class="result-val" id="res-grade-group">-</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label" id="lbl-res-correct">Respuestas Correctas:</span>
+                        <span class="result-val" id="res-correct-count">0 / 40</span>
+                    </div>
+                    <div class="result-row" style="border-bottom: none; align-items: center; margin-top: 10px;">
+                        <span class="result-label" id="lbl-res-score" style="font-size: 1.1rem; font-weight: 600;">Calificación Final:</span>
+                        <span class="score-val" id="res-score-val">0.0</span>
+                    </div>
+                </div>
+
+                <div class="unlock-area">
+                    <div class="input-group" style="margin-bottom: 15px;">
+                        <label for="teacher-password" id="lbl-teacher-password" style="text-align: left;">Contraseña del Docente</label>
+                        <input type="password" id="teacher-password" placeholder="•••••" style="text-align: center; font-size: 1.2rem; letter-spacing: 2px;">
+                    </div>
+                    <button class="btn" id="btn-unlock" onclick="unlockScreen()" style="margin-top: 5px;">
+                        <span id="btn-text-unlock">Desbloquear y Reiniciar</span>
+                    </button>
+                    <div id="lock-error" class="error-message" style="margin-top: 15px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        <span id="lock-error-text">Contraseña incorrecta.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- MODAL DE CONFIRMACIÓN -->
+    <div class="modal-overlay" id="confirm-modal">
+        <div class="modal-content">
+            <h3 class="modal-title" id="modal-confirm-title">¿Finalizar Examen?</h3>
+            <p class="modal-desc" id="modal-confirm-desc">¿Estás seguro de que deseas terminar y entregar tu examen? Ya no podrás cambiar tus respuestas.</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeConfirmModal()" id="btn-modal-cancel">Cancelar</button>
+                <button class="btn btn-danger" onclick="submitExam()" id="btn-modal-submit">Sí, Terminar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE LOGICA DEL EXAMEN -->
+    <script>
+        // CONFIGURACIÓN DE NOTIFICACIONES POR CORREO
+        // Opcional: El docente puede ingresar un Token de Web3Forms o Formspree aquí para envíos silenciosos
+        const CONFIG = {
+            web3formsKey: "", // Ingresar clave si se desea envío por AJAX de Web3Forms
+            emailDestinatario: "jaime.dominguez@imm.edu.mx"
+        };
+
+        // BASE DE DATOS DE PREGUNTAS (40 Preguntas en Español e Inglés)
+        const questionsDatabase = [
+            // SISTEMA RESPIRATORIO (1-10)
+            {
+                id: 1,
+                sectionEs: "SISTEMA RESPIRATORIO",
+                sectionEn: "RESPIRATORY SYSTEM",
+                questionEs: "¿Cuál es el órgano principal del sistema respiratorio encargado del intercambio gaseoso?",
+                questionEn: "Which is the main organ of the respiratory system responsible for gas exchange?",
+                optionsEs: ["A) Tráquea", "B) Pulmón", "C) Laringe", "D) Bronquio"],
+                optionsEn: ["A) Trachea", "B) Lung", "C) Larynx", "D) Bronchus"],
+                correct: "B"
+            },
+            {
+                id: 2,
+                sectionEs: "SISTEMA RESPIRATORIO",
+                sectionEn: "RESPIRATORY SYSTEM",
+                questionEs: "¿Cuál es la función primordial del sistema respiratorio?",
+                questionEn: "What is the primary function of the respiratory system?",
+                optionsEs: [
+                    "A) Bombear sangre oxigenada a los tejidos",
+                    "B) Filtrar los desechos metabólicos nitrogenados",
+                    "C) Proveer oxígeno al cuerpo y eliminar el dióxido de carbono",
+                    "D) Regular el equilibrio de glucosa en la sangre"
+                ],
+                optionsEn: [
+                    "A) To pump oxygenated blood to the tissues",
+                    "B) To filter nitrogenous metabolic wastes",
+                    "C) To provide oxygen to the body and eliminate carbon dioxide",
+                    "D) To regulate the balance of glucose in the blood"
+                ],
+                correct: "C"
+            },
+            {
+                id: 3,
+                sectionEs: "SISTEMA RESPIRATORIO",
+                sectionEn: "RESPIRATORY SYSTEM",
+                questionEs: "¿Cuál es la Unidad Funcional Mínima (MFU) del tejido alveolar encargada de la producción de surfactante y el intercambio gaseoso?",
+                questionEn: "What is the Minimum Functional Unit (MFU) of alveolar tissue responsible for surfactant production and gas exchange?",
+                optionsEs: ["A) Eritrocito", "B) Neumocito", "C) Enterocito", "D) Alveocito"],
+                optionsEn: ["A) Erythrocyte", "B) Pneumocyte", "C) Enterocyte", "D) Alveocyte"],
+                correct: "B"
+            },
+            {
+                id: 4,
+                sectionEs: "SISTEMA RESPIRATORIO",
+                sectionEn: "RESPIRATORY SYSTEM",
+                questionEs: "¿Qué tipo de neumocito es el principal responsable de formar la barrera estructural para el intercambio gaseoso?",
+                questionEn: "Which type of pneumocyte is mainly responsible for forming the structural barrier for gas exchange?",
+                optionsEs: ["A) Neumocito Tipo I", "B) Neumocito Tipo II", "C) Neumocito Tipo III", "D) Macrófago alveolar"],
+                optionsEn: ["A) Type I Pneumocyte", "B) Type II Pneumocyte", "C) Type III Pneumocyte", "D) Alveolar macrophage"],
+                correct: "A"
+            },
+            {
+                id: 5,
+                sectionEs: "SISTEMA RESPIRATORIO",
+                sectionEn: "RESPIRATORY SYSTEM",
+                questionEs: "¿Qué estructura funciona como una barrera física en el sistema respiratorio filtrando partículas grandes al inhalar?",
+                questionEn: "What structure functions as a physical barrier in the respiratory system, filtering large particles when inhaling?",
+                optionsEs: ["A) Cilios bronquiales", "B) Mucosa química", "C) Pelos de la nariz (vibrisas)", "D) Epíglotis"],
+                optionsEn: ["A) Bronchial cilia", "B) Chemical mucosa", "C) Nose hairs (vibrissae)", "D) Epiglottis"],
+                correct: "C"
+            },
+            {
+                id: 6,
+                sectionEs: "SISTEMA RESPIRATORIO",
+                sectionEn: "RESPIRATORY SYSTEM",
+                questionEs: "¿Cuál es la función de la mucosa y el moco respiratorio como barrera química y biológica?",
+                questionEn: "What is the function of the respiratory mucosa and mucus as a chemical and biological barrier?",
+                optionsEs: [
+                    "A) Absorber nutrientes directamente del aire inhalado",
+                    "B) Atrapar microbios y partículas extrañas mediante su viscosidad y enzimas como la lisozima",
+                    "C) Enfriar el aire antes de que llegue a los bronquios",
+                    "D) Sintetizar glóbulos rojos adicionales"
+                ],
+                optionsEn: [
+                    "A) To absorb nutrients directly from the inhaled air",
+                    "B) To trap microbes and foreign particles through their viscosity and enzymes like lysozyme",
+                    "C) To cool the air before it reaches the bronchi",
+                    "D) To synthesize additional red blood cells"
+                ],
+                correct: "B"
+            },
+            {
+                id: 7,
+                sectionEs: "SISTEMA RESPIRATORIO",
+                sectionEn: "RESPIRATORY SYSTEM",
+                questionEs: "¿Qué estructura celular del epitelio respiratorio desplaza el moco atrapado hacia la faringe para ser eliminado o tragado?",
+                questionEn: "Which cellular structure of the respiratory epithelium moves the trapped mucus towards the pharynx to be eliminated or swallowed?",
+                optionsEs: ["A) Microvellosidades", "B) Cilios", "C) Flagelos", "D) Neumocitos Tipo II"],
+                optionsEn: ["A) Microvilli", "B) Cilia", "C) Flagella", "D) Type II Pneumocytes"],
+                correct: "B"
+            },
+            {
+                id: 8,
+                sectionEs: "SISTEMA RESPIRATORIO",
+                sectionEn: "RESPIRATORY SYSTEM",
+                questionEs: "¿Qué sustancia secretada por los neumocitos tipo II evita que los alveolos colapsen debido a la tensión superficial durante la espiración?",
+                questionEn: "What substance secreted by type II pneumocytes prevents the alveoli from collapsing due to surface tension during expiration?",
+                optionsEs: ["A) Moco gástrico", "B) Surfactante pulmonar", "C) Hemoglobina", "D) Histamina"],
+                optionsEn: ["A) Gastric mucus", "B) Pulmonary surfactant", "C) Hemoglobin", "D) Histamine"],
+                correct: "B"
+            },
+            {
+                id: 9,
+                sectionEs: "SISTEMA RESPIRATORIO",
+                sectionEn: "RESPIRATORY SYSTEM",
+                questionEs: "¿A través de qué proceso físico pasa el oxígeno desde los alveolos hacia los capilares sanguíneos?",
+                questionEn: "Through which physical process does oxygen pass from the alveoli to the blood capillaries?",
+                optionsEs: ["A) Transporte activo", "B) Difusión simple", "C) Ósmosis", "D) Endocitosis"],
+                optionsEn: ["A) Active transport", "B) Simple diffusion", "C) Osmosis", "D) Endocytosis"],
+                correct: "B"
+            },
+            {
+                id: 10,
+                sectionEs: "SISTEMA RESPIRATORIO",
+                sectionEn: "RESPIRATORY SYSTEM",
+                questionEs: "¿Cuál de los siguientes es considerado un mecanismo de defensa mecánico/físico de la vía aérea superior?",
+                questionEn: "Which of the following is considered a mechanical/physical defense mechanism of the upper airway?",
+                optionsEs: [
+                    "A) El reflejo de la tos y el estornudo",
+                    "B) La secreción de ácido clorhídrico",
+                    "C) La producción de insulina",
+                    "D) La fagocitosis por neumocitos"
+                ],
+                optionsEn: [
+                    "A) The cough and sneeze reflex",
+                    "B) The secretion of hydrochloric acid",
+                    "C) The production of insulin",
+                    "D) Phagocytosis by pneumocytes"
+                ],
+                correct: "A"
+            },
+
+            // SISTEMA CARDÍACO / CIRCULATORIO (11-20)
+            {
+                id: 11,
+                sectionEs: "SISTEMA CARDÍACO / CIRCULATORIO",
+                sectionEn: "CARDIAC / CIRCULATORY SYSTEM",
+                questionEs: "Tomando en cuenta el transporte de gases como función clave, ¿cuál es la célula que actúa como la unidad funcional mínima (MFU) para el transporte de oxígeno?",
+                questionEn: "Taking gas transport as a key function into account, which cell acts as the minimum functional unit (MFU) for oxygen transport?",
+                optionsEs: ["A) Cardiomiocito", "B) Eritrocito", "C) Leucocito", "D) Trombocito"],
+                optionsEn: ["A) Cardiomyocyte", "B) Erythrocyte", "C) Leukocyte", "D) Thrombocyte"],
+                correct: "B"
+            },
+            {
+                id: 12,
+                sectionEs: "SISTEMA CARDÍACO / CIRCULATORIO",
+                sectionEn: "CARDIAC / CIRCULATORY SYSTEM",
+                questionEs: "¿Cuál es la proteína rica en hierro que se encuentra en el eritrocito y es responsable de unir el oxígeno?",
+                questionEn: "What is the iron-rich protein found in erythrocytes that is responsible for binding oxygen?",
+                optionsEs: ["A) Mioglobina", "B) Hemoglobina", "C) Albúmina", "D) Fibrina"],
+                optionsEn: ["A) Myoglobin", "B) Hemoglobin", "C) Albumin", "D) Fibrin"],
+                correct: "B"
+            },
+            {
+                id: 13,
+                sectionEs: "SISTEMA CARDÍACO / CIRCULATORIO",
+                sectionEn: "CARDIAC / CIRCULATORY SYSTEM",
+                questionEs: "¿Cuál es la función principal del sistema cardiovascular?",
+                questionEn: "What is the main function of the cardiovascular system?",
+                optionsEs: [
+                    "A) Transmitir impulsos eléctricos a los músculos esqueléticos",
+                    "B) Transportar nutrientes, gases, hormonas y desechos por todo el cuerpo",
+                    "C) Digerir macromoléculas complejas",
+                    "D) Sintetizar aminoácidos esenciales"
+                ],
+                optionsEn: [
+                    "A) To transmit electrical impulses to skeletal muscles",
+                    "B) To transport nutrients, gases, hormones, and wastes throughout the body",
+                    "C) To digest complex macromolecules",
+                    "D) To synthesize essential amino acids"
+                ],
+                correct: "B"
+            },
+            {
+                id: 14,
+                sectionEs: "SISTEMA CARDÍACO / CIRCULATORIO",
+                sectionEn: "CARDIAC / CIRCULATORY SYSTEM",
+                questionEs: "¿Qué cámara del corazón bombea sangre oxigenada hacia la circulación sistémica a través de la aorta?",
+                questionEn: "Which chamber of the heart pumps oxygenated blood into the systemic circulation through the aorta?",
+                optionsEs: ["A) Aurícula derecha", "B) Ventrículo derecho", "C) Aurícula izquierda", "D) Ventrículo izquierdo"],
+                optionsEn: ["A) Right atrium", "B) Right ventricle", "C) Left atrium", "D) Left ventricle"],
+                correct: "D"
+            },
+            {
+                id: 15,
+                sectionEs: "SISTEMA CARDÍACO / CIRCULATORIO",
+                sectionEn: "CARDIAC / CIRCULATORY SYSTEM",
+                questionEs: "¿Qué característica del eritrocito maduro humano maximiza su espacio para albergar hemoglobina y su flexibilidad en los capilares?",
+                questionEn: "What characteristic of the mature human erythrocyte maximizes its space to hold hemoglobin and its flexibility in capillaries?",
+                optionsEs: [
+                    "A) Su gran tamaño esférico",
+                    "B) La presencia de múltiples núcleos",
+                    "C) La carencia de núcleo y mitocondrias",
+                    "D) Sus prolongaciones citoplasmáticas"
+                ],
+                optionsEn: [
+                    "A) Its large spherical size",
+                    "B) The presence of multiple nuclei",
+                    "C) The lack of nucleus and mitochondria",
+                    "D) Its cytoplasmic extensions"
+                ],
+                correct: "C"
+            },
+            {
+                id: 16,
+                sectionEs: "SISTEMA CARDÍACO / CIRCULATORIO",
+                sectionEn: "CARDIAC / CIRCULATORY SYSTEM",
+                questionEs: "¿Qué tipo de vasos sanguíneos tienen paredes delgadas y permiten el intercambio real de nutrientes y gases con los tejidos?",
+                questionEn: "What type of blood vessels have thin walls and allow the actual exchange of nutrients and gases with tissues?",
+                optionsEs: ["A) Arterias de gran calibre", "B) Venas cavas", "C) Capilares", "D) Arteriolas musculares"],
+                optionsEn: ["A) Large caliber arteries", "B) Venae cavae", "C) Capillaries", "D) Muscular arterioles"],
+                correct: "C"
+            },
+            {
+                id: 17,
+                sectionEs: "SISTEMA CARDÍACO / CIRCULATORIO",
+                sectionEn: "CARDIAC / CIRCULATORY SYSTEM",
+                questionEs: "¿Hacia dónde bombea sangre el ventrículo derecho del corazón?",
+                questionEn: "Where does the right ventricle of the heart pump blood?",
+                optionsEs: [
+                    "A) Hacia el cerebro directamente",
+                    "B) Hacia los pulmones a través de la arteria pulmonar",
+                    "C) Hacia todo el cuerpo mediante la aorta",
+                    "D) Hacia la aurícula izquierda"
+                ],
+                optionsEn: [
+                    "A) Directly to the brain",
+                    "B) To the lungs through the pulmonary artery",
+                    "C) To the entire body through the aorta",
+                    "D) To the left atrium"
+                ],
+                correct: "B"
+            },
+            {
+                id: 18,
+                sectionEs: "SISTEMA CARDÍACO / CIRCULATORIO",
+                sectionEn: "CARDIAC / CIRCULATORY SYSTEM",
+                questionEs: "¿Cuál es el marcapasos natural del corazón que inicia el impulso eléctrico cardíaco?",
+                questionEn: "What is the heart's natural pacemaker that initiates the cardiac electrical impulse?",
+                optionsEs: ["A) Nodo auriculoventricular (AV)", "B) Haz de His", "C) Nodo sinoauricular (SA)", "D) Fibras de Purkinje"],
+                optionsEn: ["A) Atrioventricular (AV) node", "B) Bundle of His", "C) Sinoatrial (SA) node", "D) Purkinje fibers"],
+                correct: "C"
+            },
+            {
+                id: 19,
+                sectionEs: "SISTEMA CARDÍACO / CIRCULATORIO",
+                sectionEn: "CARDIAC / CIRCULATORY SYSTEM",
+                questionEs: "¿Qué válvula impide el flujo retrógrado de sangre desde el ventrículo izquierdo hacia la aurícula izquierda?",
+                questionEn: "Which valve prevents the backflow of blood from the left ventricle to the left atrium?",
+                optionsEs: ["A) Válvula tricúspide", "B) Válvula mitral o bicúspide", "C) Válvula del seno coronario", "D) Válvula semilunar pulmonar"],
+                optionsEn: ["A) Tricuspid valve", "B) Mitral or bicuspid valve", "C) Coronary sinus valve", "D) Pulmonary semilunar valve"],
+                correct: "B"
+            },
+            {
+                id: 20,
+                sectionEs: "SISTEMA CARDÍACO / CIRCULATORIO",
+                sectionEn: "CARDIAC / CIRCULATORY SYSTEM",
+                questionEs: "¿Cómo regresa la sangre desoxigenada de la parte superior e inferior del cuerpo a la aurícula derecha del corazón?",
+                questionEn: "How does deoxygenated blood from the upper and lower body return to the right atrium of the heart?",
+                optionsEs: [
+                    "A) A través de las venas pulmonares",
+                    "B) A través de las arterias carótidas",
+                    "C) A través de las venas cavas superior e inferior",
+                    "D) A través de la arteria aorta"
+                ],
+                optionsEn: [
+                    "A) Through the pulmonary veins",
+                    "B) Through the carotid arteries",
+                    "C) Through the superior and inferior venae cavae",
+                    "D) Through the aorta artery"
+                ],
+                correct: "C"
+            },
+
+            // SISTEMA DIGESTIVO Y BIOMOLÉCULAS (21-30)
+            {
+                id: 21,
+                sectionEs: "SISTEMA DIGESTIVO Y BIOMOLÉCULAS",
+                sectionEn: "DIGESTIVE SYSTEM & BIOMOLECULES",
+                questionEs: "¿Cuál se considera el órgano principal del sistema digestivo donde ocurre la mayor parte de la digestión química y la absorción de nutrientes?",
+                questionEn: "Which is considered the main organ of the digestive system where most chemical digestion and nutrient absorption occur?",
+                optionsEs: ["A) Estómago", "B) Intestino delgado", "C) Intestino grueso", "D) Esófago"],
+                optionsEn: ["A) Stomach", "B) Small intestine", "C) Large intestine", "D) Esophagus"],
+                correct: "B"
+            },
+            {
+                id: 22,
+                sectionEs: "SISTEMA DIGESTIVO Y BIOMOLÉCULAS",
+                sectionEn: "DIGESTIVE SYSTEM & BIOMOLECULES",
+                questionEs: "¿Cuál es la Unidad Funcional Mínima (MFU) del epitelio del intestino delgado encargada de la absorción de nutrientes?",
+                questionEn: "What is the Minimum Functional Unit (MFU) of the small intestine epithelium responsible for nutrient absorption?",
+                optionsEs: ["A) Enterocito", "B) Hepatocito", "C) Neumocito", "D) Podocito"],
+                optionsEn: ["A) Enterocyte", "B) Hepatocyte", "C) Pneumocyte", "D) Podocyte"],
+                correct: "A"
+            },
+            {
+                id: 23,
+                sectionEs: "SISTEMA DIGESTIVO Y BIOMOLÉCULAS",
+                sectionEn: "DIGESTIVE SYSTEM & BIOMOLECULES",
+                questionEs: "¿Qué modificación estructural microscópica poseen los enterocitos en su membrana apical para aumentar drásticamente la superficie de absorción?",
+                questionEn: "What microscopic structural modification do enterocytes have on their apical membrane to dramatically increase the absorption surface?",
+                optionsEs: ["A) Cilios", "B) Flagelos", "C) Microvellosidades (borde en cepillo)", "D) Uniones estrechas"],
+                optionsEn: ["A) Cilia", "B) Flagella", "C) Microvilli (brush border)", "D) Tight junctions"],
+                correct: "C"
+            },
+            {
+                id: 24,
+                sectionEs: "SISTEMA DIGESTIVO Y BIOMOLÉCULAS",
+                sectionEn: "DIGESTIVE SYSTEM & BIOMOLECULES",
+                questionEs: "Los carbohidratos complejos se degradan en azúcares simples. ¿Qué sello de advertencia mexicano encontrarías en un producto con exceso de estas biomoléculas libres?",
+                questionEn: "Complex carbohydrates break down into simple sugars. What Mexican warning seal would you find on a product with excess of these free biomolecules?",
+                optionsEs: ["A) EXCESO SODIO", "B) EXCESO CALORÍAS", "C) EXCESO AZÚCARES", "D) EXCESO GRASAS SATURADAS"],
+                optionsEn: ["A) EXCESS SODIUM", "B) EXCESS CALORIES", "C) EXCESS SUGARS", "D) EXCESS SATURATED FATS"],
+                correct: "C"
+            },
+            {
+                id: 25,
+                sectionEs: "SISTEMA DIGESTIVO Y BIOMOLÉCULAS",
+                sectionEn: "DIGESTIVE SYSTEM & BIOMOLECULES",
+                questionEs: "Las grasas y aceites pertenecen al grupo de los lípidos. Si un alimento procesado contiene un alto porcentaje de ácidos grasos sin dobles enlaces, llevará el sello:",
+                questionEn: "Fats and oils belong to the lipid group. If a processed food contains a high percentage of fatty acids without double bonds, it will bear the seal:",
+                optionsEs: ["A) EXCESO AZÚCARES", "B) EXCESO GRASAS SATURADAS", "C) CONTIENE CAFEÍNA", "D) EXCESO TRANS"],
+                optionsEn: ["A) EXCESS SUGARS", "B) EXCESS SATURATED FATS", "C) CONTAINS CAFFEINE", "D) EXCESS TRANS FATS"],
+                correct: "B"
+            },
+            {
+                id: 26,
+                sectionEs: "SISTEMA DIGESTIVO Y BIOMOLÉCULAS",
+                sectionEn: "DIGESTIVE SYSTEM & BIOMOLECULES",
+                questionEs: "¿Qué tipo de grasas modificadas industrialmente mediante hidrogenación parcial dañan la salud cardiovascular y cuentan con su propio sello de advertencia en México?",
+                questionEn: "What type of fats, industrially modified through partial hydrogenation, harm cardiovascular health and have their own warning seal in Mexico?",
+                optionsEs: ["A) Grasas saturadas", "B) Grasas poliinsaturadas", "C) Grasas trans", "D) Fosfolípidos"],
+                optionsEn: ["A) Saturated fats", "B) Polyunsaturated fats", "C) Trans fats", "D) Phospholipids"],
+                correct: "C"
+            },
+            {
+                id: 27,
+                sectionEs: "SISTEMA DIGESTIVO Y BIOMOLÉCULAS",
+                sectionEn: "DIGESTIVE SYSTEM & BIOMOLECULES",
+                questionEs: "¿Qué biomolécula polimérica, compuesta por cadenas de aminoácidos, es digerida en el estómago e intestino gracias a enzimas como la pepsinas y la tripsina?",
+                questionEn: "Which polymeric biomolecule, composed of amino acid chains, is digested in the stomach and intestine thanks to enzymes like pepsin and trypsin?",
+                optionsEs: ["A) Carbohidratos", "B) Lípidos", "C) Ácidos nucleicos", "D) Proteínas"],
+                optionsEn: ["A) Carbohydrates", "B) Lipids", "C) Nucleic acids", "D) Proteins"],
+                correct: "D"
+            },
+            {
+                id: 28,
+                sectionEs: "SISTEMA DIGESTIVO Y BIOMOLÉCULAS",
+                sectionEn: "DIGESTIVE SYSTEM & BIOMOLECULES",
+                questionEs: "Cuando un producto alimenticio tiene un alto contenido energético total debido a la suma de sus biomoléculas, ostenta el sello frontal de:",
+                questionEn: "When a food product has a high total energy content due to the sum of its biomolecules, it displays the front seal of:",
+                optionsEs: ["A) EXCESO ENERGÍA", "B) EXCESO CALORÍAS", "C) EXCESO GRASAS", "D) EXCESO CARBOHIDRATOS"],
+                optionsEn: ["A) EXCESS ENERGY", "B) EXCESS CALORIES", "C) EXCESS FATS", "D) EXCESS CARBOHYDRATES"],
+                correct: "B"
+            },
+            {
+                id: 29,
+                sectionEs: "SISTEMA DIGESTIVO Y BIOMOLÉCULAS",
+                sectionEn: "DIGESTIVE SYSTEM & BIOMOLECULES",
+                questionEs: "¿Cuál es la función principal del intestino grueso en el proceso digestivo?",
+                questionEn: "What is the main function of the large intestine in the digestive process?",
+                optionsEs: [
+                    "A) Secreción de ácido clorhídrico y digestión proteica masiva",
+                    "B) Absorción de agua y electrolitos, y formación de las heces",
+                    "C) Absorción de aminoácidos y monosacáridos a través de enterocitos",
+                    "D) Producción de bilis para emulsionar grasas"
+                ],
+                optionsEn: [
+                    "A) Secretion of hydrochloric acid and massive protein digestion",
+                    "B) Absorption of water and electrolytes, and feces formation",
+                    "C) Absorption of amino acids and monosaccharides through enterocytes",
+                    "D) Production of bile to emulsify fats"
+                ],
+                correct: "B"
+            },
+            {
+                id: 30,
+                sectionEs: "SISTEMA DIGESTIVO Y BIOMOLÉCULAS",
+                sectionEn: "DIGESTIVE SYSTEM & BIOMOLECULES",
+                questionEs: "¿Qué órgano accesorio del sistema digestivo produce enzimas digestivas clave y bicarbonato para neutralizar el quimo ácido en el duodeno?",
+                questionEn: "Which accessory organ of the digestive system produces key digestive enzymes and bicarbonate to neutralize acid chyme in the duodenum?",
+                optionsEs: ["A) Hígado", "B) Páncreas", "C) Vesícula biliar", "D) Bazo"],
+                optionsEn: ["A) Liver", "B) Pancreas", "C) Gallbladder", "D) Spleen"],
+                correct: "B"
+            },
+
+            // SISTEMA NERVIOSO (31-40)
+            {
+                id: 31,
+                sectionEs: "SISTEMA NERVIOSO",
+                sectionEn: "NERVOUS SYSTEM",
+                questionEs: "¿Cuál es la unidad anatómica y funcional básica del sistema nervioso encargada de transmitir señales eléctricas?",
+                questionEn: "What is the basic anatomical and functional unit of the nervous system responsible for transmitting electrical signals?",
+                optionsEs: ["A) Célula glial", "B) Neurona", "C) Enterocito", "D) Miocito"],
+                optionsEn: ["A) Glial cell", "B) Neuron", "C) Enterocyte", "D) Myocyte"],
+                correct: "B"
+            },
+            {
+                id: 32,
+                sectionEs: "SISTEMA NERVIOSO",
+                sectionEn: "NERVOUS SYSTEM",
+                questionEs: "¿Qué estructura de la neurona se encarga de recibir los estímulos o señales provenientes de otras neuronas o receptores?",
+                questionEn: "Which structure of the neuron is responsible for receiving stimuli or signals from other neurons or receptors?",
+                optionsEs: ["A) Axón", "B) Dendrita", "C) Vaina de mielina", "D) Botón sináptico"],
+                optionsEn: ["A) Axon", "B) Dendrite", "C) Myeline sheath", "D) Synaptic knob"],
+                correct: "B"
+            },
+            {
+                id: 33,
+                sectionEs: "SISTEMA NERVIOSO",
+                sectionEn: "NERVOUS SYSTEM",
+                questionEs: "¿Cómo se denomina la prolongación larga de la neurona que conduce el impulso nervioso lejos del soma o cuerpo celular?",
+                questionEn: "What is the long extension of the neuron that conducts the nerve impulse away from the soma or cell body called?",
+                optionsEs: ["A) Dendrita", "B) Axón", "C) Astrocito", "D) Microglía"],
+                optionsEn: ["A) Dendrite", "B) Axon", "C) Astrocyte", "D) Microglia"],
+                correct: "B"
+            },
+            {
+                id: 34,
+                sectionEs: "SISTEMA NERVIOSO",
+                sectionEn: "NERVOUS SYSTEM",
+                questionEs: "¿Qué sustancia lipídica producida por células gliales recubre el axón y acelera la velocidad de conducción del impulso nervioso?",
+                questionEn: "What lipid substance produced by glial cells coats the axon and accelerates the conduction speed of the nerve impulse?",
+                optionsEs: ["A) Colesterol", "B) Acetilcolina", "C) Mielina", "D) Melanina"],
+                optionsEn: ["A) Cholesterol", "B) Acetylcholine", "C) Myelin", "D) Melanin"],
+                correct: "C"
+            },
+            {
+                id: 35,
+                sectionEs: "SISTEMA NERVIOSO",
+                sectionEn: "NERVOUS SYSTEM",
+                questionEs: "¿Cómo se compone el Sistema Nervioso Central (SNC)?",
+                questionEn: "How is the Central Nervous System (CNS) composed?",
+                optionsEs: ["A) Nervios craneales y espinales", "B) Encéfalo y médula espinal", "C) Sistema simpático y parasimpático", "D) Cerebro y nervios periféricos"],
+                optionsEn: ["A) Cranial and spinal nerves", "B) Brain and spinal cord", "C) Sympathetic and parasympathetic systems", "D) Brain and peripheral nerves"],
+                correct: "B"
+            },
+            {
+                id: 36,
+                sectionEs: "SISTEMA NERVIOSO",
+                sectionEn: "NERVOUS SYSTEM",
+                questionEs: "¿Qué división del sistema nervioso autónomo prepara al cuerpo para situaciones de emergencia, lucha o huida?",
+                questionEn: "Which division of the autonomous nervous system prepares the body for emergency, fight or flight situations?",
+                optionsEs: [
+                    "A) Sistema nervioso parasimpático",
+                    "B) Sistema nervioso simpático",
+                    "C) Sistema nervioso somático",
+                    "D) Sistema nervioso central"
+                ],
+                optionsEn: [
+                    "A) Parasympathetic nervous system",
+                    "B) Sympathetic nervous system",
+                    "C) Somatic nervous system",
+                    "D) Central nervous system"
+                ],
+                correct: "B"
+            },
+            {
+                id: 37,
+                sectionEs: "SISTEMA NERVIOSO",
+                sectionEn: "NERVOUS SYSTEM",
+                questionEs: "¿Cómo se llama el espacio microscópico donde ocurre la comunicación química entre una neurona y otra célula?",
+                questionEn: "What is the microscopic space called where chemical communication between a neuron and another cell occurs?",
+                optionsEs: ["A) Espacio intersticial", "B) Hendidura sináptica", "C) Nodo de Ranvier", "D) Canal iónico"],
+                optionsEn: ["A) Interstitial space", "B) Synaptic cleft", "C) Node of Ranvier", "D) Ion channel"],
+                correct: "B"
+            },
+            {
+                id: 38,
+                sectionEs: "SISTEMA NERVIOSO",
+                sectionEn: "NERVOUS SYSTEM",
+                questionEs: "¿Qué nombre reciben las sustancias químicas mensajeras liberadas por los botones terminales del axón hacia la sinapsis?",
+                questionEn: "What is the name of the chemical messenger substances released by the terminal buttons of the axon into the synapse?",
+                optionsEs: ["A) Hormonas", "B) Enzimas", "C) Neurotransmisores", "D) Anticuerpos"],
+                optionsEn: ["A) Hormones", "B) Enzymes", "C) Neurotransmitters", "D) Antibodies"],
+                correct: "C"
+            },
+            {
+                id: 39,
+                sectionEs: "SISTEMA NERVIOSO",
+                sectionEn: "NERVOUS SYSTEM",
+                questionEs: "¿Qué células gliales forman la barrera hematoencefálica y dan soporte estructural y metabólico a las neuronas en el SNC?",
+                questionEn: "Which glial cells form the blood-brain barrier and provide structural and metabolic support to neurons in the CNS?",
+                optionsEs: ["A) Células de Schwann", "B) Astrocitos", "C) Microglía", "D) Oligodendrocitos"],
+                optionsEn: ["A) Schwann cells", "B) Astrocytes", "C) Microglia", "D) Oligodendrocytes"],
+                correct: "B"
+            },
+            {
+                id: 40,
+                sectionEs: "SISTEMA NERVIOSO",
+                sectionEn: "NERVOUS SYSTEM",
+                questionEs: "¿Qué parte del encéfalo coordina los movimientos voluntarios, el equilibrio y la postura corporal?",
+                questionEn: "What part of the brain coordinates voluntary movements, balance, and body posture?",
+                optionsEs: ["A) Cerebelo", "B) Hipotálamo", "C) Bulbo raquídeo", "D) Cuerpo calloso"],
+                optionsEn: ["A) Cerebellum", "B) Hypothalamus", "C) Medulla oblongata", "D) Corpus callosum"],
+                correct: "A"
+            }
+        ];
+
+        // DICCIONARIOS DE IDIOMA PARA LA INTERFAZ
+        const translations = {
+            es: {
+                loginTitle: "Examen de Biología",
+                loginSubtitle: "Ingresa tus datos para comenzar la evaluación",
+                lblAccessCode: "Código de Acceso",
+                lblStudentName: "Nombre(s)",
+                lblPaternalLastname: "Apellido Paterno",
+                lblMaternalLastname: "Apellido Materno",
+                lblStudentGrade: "Grado",
+                lblStudentGroup: "Grupo",
+                btnStartExam: "Comenzar Examen",
+                errAccessCode: "Código de acceso incorrecto.",
+                errMissingFields: "Por favor, completa todos los campos requeridos.",
+                examHeaderTitle: "Examen de Biología: Ordinario 2026",
+                progressText: "Pregunta {curr} de {total}",
+                progressPercentage: "{pct}% Completado",
+                badgeTitle: "Alumno",
+                lblQuestionGrid: "Navegación de Preguntas",
+                btnPrev: "Anterior",
+                btnNext: "Siguiente",
+                btnFinish: "Terminar Examen",
+                modalConfirmTitle: "¿Finalizar Examen?",
+                modalConfirmDesc: "¿Estás seguro de que deseas terminar y entregar tu examen? Ya no podrás cambiar tus respuestas.",
+                btnModalCancel: "Cancelar",
+                btnModalSubmit: "Sí, Terminar",
+                lockHeaderTitle: "Evaluación Finalizada y Bloqueada",
+                lockHeaderSubtitle: "Los datos del examen han sido consolidados y enviados. Esta pantalla está bloqueada y requiere desbloqueo por parte del docente.",
+                lblResStudent: "Alumno:",
+                lblResGradeGroup: "Grado y Grupo:",
+                lblResCorrect: "Respuestas Correctas:",
+                lblResScore: "Calificación Final:",
+                lblTeacherPassword: "Contraseña del Docente",
+                btnUnlock: "Desbloquear y Reiniciar",
+                errUnlockPass: "Contraseña incorrecta."
+            },
+            en: {
+                loginTitle: "Biology Exam",
+                loginSubtitle: "Enter your details to begin the assessment",
+                lblAccessCode: "Access Code",
+                lblStudentName: "First Name(s)",
+                lblPaternalLastname: "Paternal Last Name",
+                lblMaternalLastname: "Maternal Last Name",
+                lblStudentGrade: "Grade",
+                lblStudentGroup: "Group",
+                btnStartExam: "Start Exam",
+                errAccessCode: "Incorrect access code.",
+                errMissingFields: "Please fill in all required fields.",
+                examHeaderTitle: "Biology Exam: Ordinario 2026",
+                progressText: "Question {curr} of {total}",
+                progressPercentage: "{pct}% Completed",
+                badgeTitle: "Student",
+                lblQuestionGrid: "Questions Navigation",
+                btnPrev: "Previous",
+                btnNext: "Next",
+                btnFinish: "Finish Exam",
+                modalConfirmTitle: "Finish Exam?",
+                modalConfirmDesc: "Are you sure you want to finish and submit your exam? You won't be able to change your answers.",
+                btnModalCancel: "Cancel",
+                btnModalSubmit: "Yes, Finish",
+                lockHeaderTitle: "Assessment Completed & Locked",
+                lockHeaderSubtitle: "The exam data has been consolidated and sent. This screen is locked and requires teacher authorization to unlock.",
+                lblResStudent: "Student:",
+                lblResGradeGroup: "Grade and Group:",
+                lblResCorrect: "Correct Answers:",
+                lblResScore: "Final Grade:",
+                lblTeacherPassword: "Teacher Password",
+                btnUnlock: "Unlock & Reset",
+                errUnlockPass: "Incorrect password."
+            }
+        };
+
+        // ESTADO GLOBAL DE LA APLICACIÓN
+        let appState = {
+            currentLanguage: "es", // "es" para grupo D, "en" para grupo A y B
+            student: {
+                name: "",
+                paternalLastname: "",
+                maternalLastname: "",
+                grade: "1ro",
+                group: "A"
+            },
+            answers: {}, // Guardará respuestas en formato { questionId: "A"/"B"/"C"/"D" }
+            currentQuestionIndex: 0,
+            totalQuestions: questionsDatabase.length
+        };
+
+        // EVENTOS AL CARGAR LA PÁGINA
+        window.addEventListener('load', () => {
+            // Configurar traducción inicial según el grupo por defecto (A -> inglés)
+            handleGroupChange();
+            
+            // Prevenir atajos comunes de copiado y recarga
+            document.addEventListener('keydown', (e) => {
+                // F5, Ctrl+R
+                if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+                    if (document.getElementById('exam-screen').classList.contains('active') || 
+                        document.getElementById('lock-screen').classList.contains('active')) {
+                        e.preventDefault();
+                    }
+                }
+                // Ctrl+C, Ctrl+V, Ctrl+U (Ver código fuente), Ctrl+Shift+I
+                if (e.ctrlKey && (e.key === 'c' || e.key === 'v' || e.key === 'u' || e.key === 'C' || e.key === 'V')) {
+                    e.preventDefault();
+                }
+            });
+
+            // Prevenir clic derecho
+            document.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+            });
+        });
+
+        // MANEJO DE CAMBIO DE IDIOMA EN VIVO DESDE EL LOGIN
+        function handleGroupChange() {
+            const groupSelect = document.getElementById('student-group');
+            const selectedGroup = groupSelect.value;
+            
+            // A o B -> inglés, D -> español
+            if (selectedGroup === 'A' || selectedGroup === 'B') {
+                appState.currentLanguage = "en";
+            } else {
+                appState.currentLanguage = "es";
+            }
+            
+            translateInterface(appState.currentLanguage);
+        }
+
+        // FUNCIÓN TRADUCTORA DE INTERFAZ
+        function translateInterface(lang) {
+            const dict = translations[lang];
+            
+            // Login Screen Labels
+            document.getElementById('login-title').textContent = dict.loginTitle;
+            document.getElementById('login-subtitle').textContent = dict.loginSubtitle;
+            document.getElementById('lbl-access-code').textContent = dict.lblAccessCode;
+            document.getElementById('lbl-student-name').textContent = dict.lblStudentName;
+            document.getElementById('lbl-paternal-lastname').textContent = dict.lblPaternalLastname;
+            document.getElementById('lbl-maternal-lastname').textContent = dict.lblMaternalLastname;
+            document.getElementById('lbl-student-grade').textContent = dict.lblStudentGrade;
+            document.getElementById('lbl-student-group').textContent = dict.lblStudentGroup;
+            document.getElementById('btn-start-exam').querySelector('span').textContent = dict.btnStartExam;
+            document.getElementById('login-error-text').textContent = dict.errAccessCode;
+
+            // Exam Screen Labels
+            document.getElementById('exam-header-title').textContent = dict.examHeaderTitle;
+            document.getElementById('badge-title').textContent = dict.badgeTitle;
+            document.getElementById('lbl-question-grid').textContent = dict.lblQuestionGrid;
+            document.getElementById('btn-text-prev').textContent = dict.btnPrev;
+            document.getElementById('btn-text-next').textContent = dict.btnNext;
+            document.getElementById('btn-text-finish').textContent = dict.btnFinish;
+
+            // Confirm Modal Labels
+            document.getElementById('modal-confirm-title').textContent = dict.modalConfirmTitle;
+            document.getElementById('modal-confirm-desc').textContent = dict.modalConfirmDesc;
+            document.getElementById('btn-modal-cancel').textContent = dict.btnModalCancel;
+            document.getElementById('btn-modal-submit').textContent = dict.btnModalSubmit;
+
+            // Lock Screen Labels
+            document.getElementById('lock-header-title').textContent = dict.lockHeaderTitle;
+            document.getElementById('lock-header-subtitle').textContent = dict.lockHeaderSubtitle;
+            document.getElementById('lbl-res-student').textContent = dict.lblResStudent;
+            document.getElementById('lbl-res-grade-group').textContent = dict.lblResGradeGroup;
+            document.getElementById('lbl-res-correct').textContent = dict.lblResCorrect;
+            document.getElementById('lbl-res-score').textContent = dict.lblResScore;
+            document.getElementById('lbl-teacher-password').textContent = dict.lblTeacherPassword;
+            document.getElementById('btn-text-unlock').textContent = dict.btnUnlock;
+            document.getElementById('lock-error-text').textContent = dict.errUnlockPass;
+        }
+
+        // LÓGICA DE INICIO DE EXAMEN
+        function startExam() {
+            const accessCodeInput = document.getElementById('access-code');
+            const studentNameInput = document.getElementById('student-name');
+            const paternalInput = document.getElementById('paternal-lastname');
+            const maternalInput = document.getElementById('maternal-lastname');
+            const gradeSelect = document.getElementById('student-grade');
+            const groupSelect = document.getElementById('student-group');
+            const errorDiv = document.getElementById('login-error');
+
+            errorDiv.style.display = 'none';
+
+            // Validar código de acceso (exacto 0001JDC)
+            if (accessCodeInput.value.trim() !== '0001JDC') {
+                errorDiv.style.display = 'flex';
+                document.getElementById('login-error-text').textContent = translations[appState.currentLanguage].errAccessCode;
+                return;
+            }
+
+            // Validar campos requeridos
+            if (!studentNameInput.value.trim() || !paternalInput.value.trim() || !maternalInput.value.trim()) {
+                errorDiv.style.display = 'flex';
+                document.getElementById('login-error-text').textContent = translations[appState.currentLanguage].errMissingFields;
+                return;
+            }
+
+            // Guardar datos del estudiante
+            appState.student = {
+                name: studentNameInput.value.trim(),
+                paternalLastname: paternalInput.value.trim(),
+                maternalLastname: maternalInput.value.trim(),
+                grade: gradeSelect.value,
+                group: groupSelect.value
+            };
+
+            // Configurar datos en badge del examen
+            const fullName = `${appState.student.paternalLastname} ${appState.student.maternalLastname}, ${appState.student.name}`;
+            document.getElementById('badge-student-name').textContent = fullName;
+            
+            const detailsText = appState.currentLanguage === 'es' ? 
+                `Grado: ${appState.student.grade} | Grupo: ${appState.student.group}` :
+                `Grade: ${appState.student.grade} | Group: ${appState.student.group}`;
+            document.getElementById('badge-details').textContent = detailsText;
+
+            // Inicializar navegación del examen
+            buildQuestionNavGrid();
+            appState.currentQuestionIndex = 0;
+            loadQuestion(0);
+
+            // Cambiar pantalla con animación
+            switchScreen('login-screen', 'exam-screen');
+        }
+
+        // CREAR CUADRICULA DE NAVEGACIÓN
+        function buildQuestionNavGrid() {
+            const grid = document.getElementById('question-nav-grid');
+            grid.innerHTML = '';
+            
+            for (let i = 0; i < appState.totalQuestions; i++) {
+                const item = document.createElement('div');
+                item.className = 'grid-item';
+                item.id = `nav-item-${i}`;
+                item.textContent = i + 1;
+                item.addEventListener('click', () => {
+                    navigateQuestion(i - appState.currentQuestionIndex);
+                });
+                grid.appendChild(item);
+            }
+        }
+
+        // CARGAR PREGUNTA ESPECÍFICA
+        function loadQuestion(index) {
+            const q = questionsDatabase[index];
+            const isEs = appState.currentLanguage === "es";
+
+            // Actualizar sección y pregunta
+            document.getElementById('question-section-name').textContent = isEs ? q.sectionEs : q.sectionEn;
+            document.getElementById('question-display-text').textContent = `${index + 1}. ${isEs ? q.questionEs : q.questionEn}`;
+
+            // Renderizar opciones
+            const optionsList = document.getElementById('options-display-list');
+            optionsList.innerHTML = '';
+
+            const optionsArray = isEs ? q.optionsEs : q.optionsEn;
+            const optionLetters = ["A", "B", "C", "D"];
+
+            optionsArray.forEach((opt, idx) => {
+                const letter = optionLetters[idx];
+                const cleanOptText = opt.substring(3).trim(); // Elimina el "A) " del texto original
+
+                const optionItem = document.createElement('div');
+                optionItem.className = 'option-item';
+                if (appState.answers[q.id] === letter) {
+                    optionItem.className += ' selected';
+                }
+
+                optionItem.addEventListener('click', () => {
+                    selectOption(q.id, letter);
+                });
+
+                optionItem.innerHTML = `
+                    <div class="option-letter">${letter}</div>
+                    <div class="option-text">${cleanOptText}</div>
+                `;
+                optionsList.appendChild(optionItem);
+            });
+
+            // Actualizar estado de cuadrícula visual
+            for (let i = 0; i < appState.totalQuestions; i++) {
+                const navItem = document.getElementById(`nav-item-${i}`);
+                if (!navItem) continue;
+                
+                let classes = 'grid-item';
+                if (i === index) {
+                    classes += ' current';
+                } else if (appState.answers[questionsDatabase[i].id]) {
+                    classes += ' answered';
+                }
+                navItem.className = classes;
+            }
+
+            // Actualizar barra de progreso
+            updateProgressBar();
+        }
+
+        // EVENTO DE SELECCIÓN DE RESPUESTA
+        function selectOption(questionId, letter) {
+            appState.answers[questionId] = letter;
+            
+            // Re-cargar la pregunta actual para ver el estado visual seleccionado
+            loadQuestion(appState.currentQuestionIndex);
+        }
+
+        // ACTUALIZAR BARRA DE PROGRESO
+        function updateProgressBar() {
+            const answeredCount = Object.keys(appState.answers).length;
+            const pct = Math.round((answeredCount / appState.totalQuestions) * 100);
+            
+            const bar = document.getElementById('exam-progress-bar');
+            bar.style.width = `${pct}%`;
+
+            const dict = translations[appState.currentLanguage];
+            document.getElementById('progress-text').textContent = dict.progressText
+                .replace('{curr}', appState.currentQuestionIndex + 1)
+                .replace('{total}', appState.totalQuestions);
+                
+            document.getElementById('progress-percentage').textContent = dict.progressPercentage
+                .replace('{pct}', pct);
+        }
+
+        // NAVEGAR ENTRE PREGUNTAS (Siguiente / Anterior)
+        function navigateQuestion(direction) {
+            const targetIndex = appState.currentQuestionIndex + direction;
+            if (targetIndex >= 0 && targetIndex < appState.totalQuestions) {
+                appState.currentQuestionIndex = targetIndex;
+                loadQuestion(targetIndex);
+            }
+        }
+
+        // MODAL DE CONFIRMACIÓN
+        function openConfirmModal() {
+            document.getElementById('confirm-modal').classList.add('active');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirm-modal').classList.remove('active');
+        }
+
+        // CALCULAR RESULTADOS Y CAMBIAR A PANTALLA DE BLOQUEO
+        function submitExam() {
+            closeConfirmModal();
+
+            // Calcular respuestas correctas
+            let correctCount = 0;
+            questionsDatabase.forEach(q => {
+                if (appState.answers[q.id] === q.correct) {
+                    correctCount++;
+                }
+            });
+
+            // Calificación = (Correctas / Total) * 10
+            const scoreRaw = (correctCount / appState.totalQuestions) * 10;
+            const scoreFormatted = scoreRaw.toFixed(1);
+
+            // Poblar pantalla de resultados
+            const fullName = `${appState.student.name} ${appState.student.paternalLastname} ${appState.student.maternalLastname}`;
+            document.getElementById('res-student-name').textContent = fullName;
+            document.getElementById('res-grade-group').textContent = `${appState.student.grade} - ${appState.student.group}`;
+            document.getElementById('res-correct-count').textContent = `${correctCount} / ${appState.totalQuestions}`;
+            document.getElementById('res-score-val').textContent = scoreFormatted;
+
+            // Congelar y bloquear pantalla
+            document.body.classList.add('frozen-mode');
+            switchScreen('exam-screen', 'lock-screen');
+
+            // Enviar calificación por correo
+            sendGradeEmail(fullName, appState.student.grade, appState.student.group, correctCount, scoreFormatted);
+        }
+
+        // ENVÍO DE CALIFICACIÓN POR CORREO
+        function sendGradeEmail(fullName, grade, group, correctAnswers, score) {
+            const subject = `CALIFICACION EXAMEN BIOLOGIA 2026 - ${fullName}`;
+            
+            // Cuerpo del correo detallado
+            let body = `REPORTE DE EVALUACION DIGITAL DE BIOLOGIA\r\n`;
+            body += `=========================================\r\n\r\n`;
+            body += `Nombre del Alumno: ${fullName}\r\n`;
+            body += `Grado: ${grade}\r\n`;
+            body += `Grupo: ${group}\r\n`;
+            body += `Respuestas Correctas: ${correctAnswers} de ${appState.totalQuestions}\r\n`;
+            body += `Calificacion: ${score} / 10\r\n\r\n`;
+            body += `Fecha y Hora de Entrega: ${new Date().toLocaleString()}\r\n`;
+            body += `=========================================\r\n`;
+            body += `Examen generado por Sistema Evaluativo Digital (Ordinario2026)`;
+
+            // Opción 1: Enviar mediante Web3Forms o Formspree AJAX si tiene credenciales
+            if (CONFIG.web3formsKey) {
+                fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        access_key: CONFIG.web3formsKey,
+                        subject: subject,
+                        to_email: CONFIG.emailDestinatario,
+                        from_name: "Evaluacion Biologia",
+                        message: body
+                    })
+                }).catch(err => console.log("AJAX email fallback to mailto:", err));
+            }
+
+            // Opción 2: Trigger de redirección mailto nativa del navegador para garantizar el envío
+            const mailtoUrl = `mailto:${CONFIG.emailDestinatario}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            
+            // Usamos un iframe o una redirección controlada para que no afecte la pantalla congelada
+            setTimeout(() => {
+                window.location.href = mailtoUrl;
+            }, 800);
+        }
+
+        // DESBLOQUEO DE PANTALLA POR EL DOCENTE
+        function unlockScreen() {
+            const passInput = document.getElementById('teacher-password');
+            const errorDiv = document.getElementById('lock-error');
+
+            errorDiv.style.display = 'none';
+
+            // Clave requerida: 12345
+            if (passInput.value === '12345') {
+                // Descongelar pantalla
+                document.body.classList.remove('frozen-mode');
+                
+                // Reiniciar aplicación al estado inicial
+                resetApp();
+                
+                // Cambiar a pantalla de login
+                switchScreen('lock-screen', 'login-screen');
+            } else {
+                errorDiv.style.display = 'flex';
+                document.getElementById('lock-error-text').textContent = translations[appState.currentLanguage].errUnlockPass;
+                passInput.value = '';
+                passInput.focus();
+            }
+        }
+
+        // REINICIAR ESTADO DEL EXAMEN
+        function resetApp() {
+            appState.answers = {};
+            appState.currentQuestionIndex = 0;
+            
+            // Vaciar inputs del login
+            document.getElementById('access-code').value = '';
+            document.getElementById('student-name').value = '';
+            document.getElementById('paternal-lastname').value = '';
+            document.getElementById('maternal-lastname').value = '';
+            document.getElementById('student-grade').value = '1ro';
+            document.getElementById('student-group').value = 'A';
+            document.getElementById('teacher-password').value = '';
+
+            // Reiniciar traducción
+            handleGroupChange();
+        }
+
+        // CAMBIAR PANTALLA DE FORMA ELEGANTE
+        function switchScreen(fromId, toId) {
+            const fromScreen = document.getElementById(fromId);
+            const toScreen = document.getElementById(toId);
+
+            fromScreen.style.opacity = '0';
+            fromScreen.style.transform = 'translateY(-15px)';
+
+            setTimeout(() => {
+                fromScreen.classList.remove('active');
+                toScreen.classList.add('active');
+                
+                // Forzar reflow
+                toScreen.offsetHeight;
+                
+                toScreen.style.opacity = '1';
+                toScreen.style.transform = 'translateY(0)';
+            }, 300);
+        }
+    </script>
+</body>
+</html>
