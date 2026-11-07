@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MaderoChecker – Portal del Alumno</title>
+  <link rel="icon" type="image/png" href="ICONO%20Madero.png">
+  <link rel="apple-touch-icon" href="ICONO%20Madero.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { align-items: flex-start; padding: 30px 20px; }
+    .dash-wrap { width: 100%; max-width: 740px; z-index: 10; display: flex; flex-direction: column; gap: 1.2rem; }
+
+    .dash-header {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 18px;
+      padding: 1.6rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    }
+    .dash-header img { height: 52px; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.2)); }
+    .dash-header-text h1 { color: #fff; font-size: 1.5rem; font-weight: 800; }
+    .dash-header-text p  { color: rgba(255,255,255,0.75); font-size: 0.9rem; margin-top: 2px; }
+
+    .info-card {
+      background: rgba(255,255,255,0.18);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 16px;
+      padding: 1.4rem 1.8rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .info-item { display: flex; flex-direction: column; gap: 3px; }
+    .info-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.8px; color: rgba(255,255,255,0.55); font-weight: 700; }
+    .info-value { font-size: 1rem; font-weight: 800; color: #fff; }
+
+    .subjects-card {
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    }
+    .subjects-card-head {
+      padding: 1.1rem 1.6rem;
+      background: linear-gradient(90deg, #1f2029, #2d2b45);
+      color: #fff;
+      font-weight: 800;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .subjects-card-head span { background: rgba(133,93,230,0.3); padding: 2px 10px; border-radius: 20px; font-size: 0.82rem; margin-left: auto; font-weight: 700; }
+
+    .grades-action { width:100%; padding:12px 16px; border:0; background:#25283a; color:#fff; font:inherit; font-weight:800; cursor:pointer; text-align:left; }
+    .grades-action:hover { background:#34374b; }
+    .grades-content { padding:1rem 1.2rem; color:#333; }
+    .grades-table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+    .grades-table th,.grades-table td { padding:9px 8px; border-bottom:1px solid #eee; text-align:left; vertical-align:top; }
+    .grades-table th { color:#666; font-size:0.75rem; text-transform:uppercase; }
+    .grades-section + .grades-section { margin-top:1rem; padding-top:1rem; border-top:1px solid #e5e7eb; }
+
+    .student-list { padding: 0.25rem 1.2rem; color: #333; }
+    .student-notice, .teacher-row { padding: 1rem 0; border-bottom: 1px solid #eee; }
+    .student-notice:last-child, .teacher-row:last-child { border-bottom: 0; }
+    .student-notice small, .teacher-email { display: block; color: #687078; margin-top: 4px; overflow-wrap: anywhere; }
+    .teacher-name { font-weight: 800; }
+    .teacher-classes, .partial-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 8px; margin-top: 10px; }
+    .student-choice { min-height: 44px; border: 1px solid #d8dbe5; border-radius: 7px; background: #fff; color: #303345; padding: 9px 12px; font: inherit; font-weight: 700; cursor: pointer; text-align: left; transition: border-color 0.15s, background 0.15s, color 0.15s; }
+    .student-choice:hover { border-color: #855de6; background: #f8f5ff; }
+    .student-choice[aria-pressed="true"] { border-color: #6743c2; background: #f0eaff; color: #50319d; box-shadow: inset 3px 0 #6743c2; }
+    .student-choice:focus-visible { outline: 3px solid rgba(103,67,194,0.35); outline-offset: 2px; }
+    .partial-choice { display: flex; flex-direction: column; gap: 3px; }
+    .partial-choice small { color: #687078; font-size: 0.72rem; font-weight: 600; }
+    .student-choice[aria-pressed="true"] small { color: #50319d; }
+    .partial-list { margin-top: 14px; padding-top: 12px; border-top: 1px solid #ececf1; }
+    .student-report { margin-top: 12px; padding: 12px; border-radius: 8px; background: #f8f9fc; overflow-x: auto; }
+    .student-report-heading { font-weight: 800; margin-bottom: 12px; }
+    .student-report-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 14px; align-items: start; }
+    .student-report-grid > div { min-width: 0; }
+    .student-chart-wrap { height: 230px; position: relative; }
+    .student-exam-summary { margin-top: 8px; text-align: center; color: #687078; font-size: 0.82rem; font-weight: 700; }
+    .student-report-total { margin-bottom: 8px; font-size: 1rem; font-weight: 800; }
+    .student-report-level { margin-bottom: 10px; font-weight: 800; }
+    .student-report-table-wrap { width: 100%; overflow-x: auto; }
+    .student-report-table-wrap .grades-table { min-width: 500px; }
+    .student-grade-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; font-size: 0.72rem; }
+    .student-grade-legend span { font-weight: 700; }
+    .student-report-comments { margin-top: 14px; padding: 10px; border-radius: 7px; background: #fff; }
+    .student-report-comments p + p { margin-top: 8px; }
+    .student-report-evidence { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-top: 10px; }
+    .student-report-evidence a { color: inherit; text-decoration: none; border: 1px solid #e2e8f0; border-radius: 7px; overflow: hidden; }
+    .student-report-evidence img { display: block; width: 100%; height: 100px; object-fit: cover; }
+    .student-report-evidence span { display: block; padding: 6px; font-size: 0.75rem; }
+
+    @media (max-width: 760px) {
+      .student-report-grid { grid-template-columns: minmax(0, 1fr); }
+      .student-report-table-wrap .grades-table { min-width: 500px; }
+    }
+
+    @media (max-width: 540px) {
+      body { padding: 16px 12px; }
+      .dash-header { padding: 1.2rem; gap: 0.8rem; }
+      .dash-header img { height: 42px; }
+      .info-card { padding: 1.1rem; }
+      .subjects-card-head { padding: 1rem 1.1rem; }
+      .student-list { padding: 0.2rem 1rem; }
+      .student-report-grid { grid-template-columns: 1fr; }
+      .student-chart-wrap { height: 210px; }
+    }
+
+    table.stbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    table.stbl th { padding: 10px 16px; background: #f8f9fa; color: #555; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid #eee; text-align: left; font-weight: 700; }
+    table.stbl td { padding: 12px 16px; border-bottom: 1px solid #f3f3f3; color: #333; }
+    table.stbl tr:last-child td { border-bottom: none; }
+    table.stbl tbody tr:hover { background: #fafbff; }
+    table.stbl .sub-code { font-family: monospace; font-size: 0.82rem; font-weight: 800; color: #855de6; background: #f0ebff; padding: 3px 8px; border-radius: 6px; }
+
+    .btn-logout-dash {
+      width: 100%; padding: 14px;
+      background: rgba(173,0,0,0.75);
+      border: 1px solid rgba(173,0,0,0.5);
+      color: #fff; border-radius: 14px;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: all 0.2s;
+      backdrop-filter: blur(8px);
+    }
+    .btn-logout-dash:hover { background: rgba(173,0,0,0.9); transform: translateY(-1px); }
+
+    .chip-grado { display: inline-block; background: rgba(133,93,230,0.2); color: #fff; padding: 3px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 800; border: 1px solid rgba(133,93,230,0.4); }
+  </style>
+</head>
+<body>
+  <img src="./home_files/db2c647cf06bb10a8906a80f06464546.png" class="bg-decoration bg-decoration-1" alt="">
+  <img src="./home_files/db2c647cf06bb10a8906a80f06464546.png" class="bg-decoration bg-decoration-2" alt="">
+  <img src="./home_files/db2c647cf06bb10a8906a80f06464546.png" class="bg-decoration bg-decoration-3" alt="">
+  <img src="./home_files/db2c647cf06bb10a8906a80f06464546.png" class="bg-decoration bg-decoration-4" alt="">
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <div class="dash-wrap">
+    <div class="dash-header">
+      <img src="https://immsec.neocities.org/IMM/IMM.png" alt="Logo IMM">
+      <div class="dash-header-text">
+        <h1>¡Hola, <span id="welcome-name">Alumno</span>!</h1>
+        <p>Portal MaderoChecker · <span id="school-year">Ciclo Escolar 2024-2025</span></p>
+      </div>
+    </div>
+
+    <div class="info-card" id="info-loading">
+      <div class="info-item"><span class="info-label">Nombre Completo</span><span class="info-value" id="ui-nombre">Cargando…</span></div>
+      <div class="info-item"><span class="info-label">Matrícula</span><span class="info-value" id="ui-matricula">—</span></div>
+      <div class="info-item"><span class="info-label">Grado</span><span class="info-value" id="ui-grado">—</span></div>
+      <div class="info-item"><span class="info-label">Grupo</span><span class="info-value" id="ui-grupo">—</span></div>
+    </div>
+
+    <div class="subjects-card">
+      <div class="subjects-card-head">🔔 Notificaciones</div>
+      <div class="student-list" id="notifications-content">Cargando notificaciones…</div>
+    </div>
+
+    <div class="subjects-card">
+      <div class="subjects-card-head">👩‍🏫 Mis maestros <span id="grade-badge">—</span></div>
+      <div class="student-list" id="teachers-content">Cargando materias…</div>
+    </div>
+
+    <button class="btn-logout-dash" id="btn-logout">✕ Cerrar Sesión</button>
+  </div>
+
+  <script src="pwa.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="firebase-init.js"></script>
+  <script>
+    // ── Session check ────────────────────
+    if (sessionStorage.getItem("userRole") !== "Alumno") location.href = "index.html";
+
+    const MATRICULA = sessionStorage.getItem("username") || "";
+    let alumnoProfile = null;
+    let studentTeachers = [];
+    let studentGradeRecords = [];
+    let studentReportChart = null;
+
+    // ── Subject catalogue (official) ─────
+    const SUBJECTS = {
+      "1": ["Matemáticas I","Español I","Educación Física I","Formación Cívica y Ética I","Historia I","Geografía","Smart Mind I","Informática I","Inglés I","Artes I","Biología"],
+      "2": ["Matemáticas II","Español II","Educación Física II","Formación Cívica y Ética II","Historia II","Smart Mind II","Informática II","Inglés II","Artes II","Física"],
+      "3": ["Matemáticas III","Español III","Educación Física III","Formación Cívica y Ética III","Historia III","Smart Mind III","Informática III","Inglés III","Artes III","Química"]
+    };
+
+    function showToast(msg, type="error") {
+      const t = document.createElement("div");
+      t.className = `toast toast-${type==="success"?"success":"error"}`;
+      t.innerHTML = `<span>${msg}</span><span style="cursor:pointer;margin-left:10px;font-weight:bold;" onclick="this.parentElement.remove()">×</span>`;
+      document.getElementById("toast-container").appendChild(t);
+      setTimeout(() => { t.classList.add("slide-out"); t.addEventListener("animationend",()=>t.remove()); }, 4000);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, character => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[character]));
+    }
+
+    function getGradeBand(value) {
+      if (value === null || value === undefined || value === "") return { label: "Sin calificación", color: "#6b7280" };
+      const grade = Number(value);
+      if (!Number.isFinite(grade)) return { label: "Sin calificación", color: "#6b7280" };
+      if (grade < 6) return { label: "Deficiente", color: "#dc2626" };
+      if (grade < 7) return { label: "Necesita apoyo", color: "#b45309" };
+      if (grade < 8) return { label: "Puede mejorar", color: "#15803d" };
+      if (grade < 9) return { label: "Eficiente", color: "#0f766e" };
+      if (grade < 10) return { label: "Bueno", color: "#2563eb" };
+      return { label: "Excelente", color: "#7c3aed" };
+    }
+
+    // ── Load profile (always by Matrícula doc ID) ──
+    async function loadProfile() {
+      try {
+        const snap = await db.collection("Usuarios").doc(MATRICULA).get();
+
+        if (!snap.exists) {
+          showToast("No se encontró tu perfil. Contacta al administrador.");
+          document.getElementById("teachers-content").textContent = "Perfil no encontrado. Contacta al administrador.";
+          return;
+        }
+
+        const d = snap.data();
+        alumnoProfile = { id: snap.id, ...d };
+        const nombre = d.Nombre || sessionStorage.getItem("fullName") || "Alumno";
+        const grado  = String(d.Grado || "");
+        const grupo  = d.Grupo || "—";
+
+        document.getElementById("welcome-name").textContent = nombre.split(" ")[0];
+        document.getElementById("ui-nombre").textContent   = nombre;
+        document.getElementById("ui-matricula").textContent = MATRICULA;
+        document.getElementById("ui-grado").textContent    = grado ? `${grado}° de Secundaria` : "Sin grado";
+        document.getElementById("ui-grupo").textContent    = grupo;
+        document.getElementById("grade-badge").textContent = grado ? `${grado}° de Secundaria` : "Sin asignar";
+
+        await loadAssignedTeachers();
+      } catch(e) {
+        showToast("Error al cargar perfil: " + e.message);
+      }
+    }
+
+    async function loadAssignedTeachers() {
+      const teachersContent = document.getElementById("teachers-content");
+      const notificationsContent = document.getElementById("notifications-content");
+      const group = String(alumnoProfile.Grupo || "").toUpperCase();
+      const grade = String(alumnoProfile.Grado || "");
+      try {
+        const [teachersSnap, tutorsSnap] = await Promise.all([
+          db.collection("Usuarios").where("Rol", "==", "Docente").get(),
+          db.collection("Usuarios").where("Rol", "==", "Docente (tutor)").get()
+        ]);
+        const allTeachers = [...teachersSnap.docs, ...tutorsSnap.docs].map(doc => ({ id: doc.id, ...doc.data() }));
+        studentTeachers = allTeachers.map(teacher => {
+          const classes = (teacher.Clases || []).filter(className => {
+            const classGrade = String(className).match(/\((\d)°\)/)?.[1];
+            const matchesGrade = classGrade ? classGrade === grade : (SUBJECTS[grade] || []).some(subject => subject === className);
+            const groups = teacher.ClasesConfig?.[className]?.Grupos;
+            return matchesGrade && (!Array.isArray(groups) || !groups.length || groups.some(item => String(item).toUpperCase() === group));
+          }).map(name => ({
+            name,
+            subject: name.replace(/\s*\(\d°\)\s*$/, ""),
+            partials: [],
+            records: []
+          }));
+          return classes.length ? { ...teacher, id: teacher.id, classes } : null;
+        }).filter(Boolean);
+
+        const identifiers = [...new Set([MATRICULA, alumnoProfile.Matricula].filter(Boolean).map(String))];
+        const gradeSnaps = await Promise.all(identifiers.map(identifier => db.collection("Calificaciones")
+          .where("AlumnoMatricula", "==", identifier)
+          .get()));
+        const recordsById = new Map();
+        gradeSnaps.forEach(snapshot => snapshot.docs.forEach(doc => recordsById.set(doc.id, { id: doc.id, ...doc.data() })));
+        studentGradeRecords = [...recordsById.values()].filter(record => String(record.Grupo || group).toUpperCase() === group);
+
+        await Promise.all(studentTeachers.map(async teacher => {
+          const snap = await db.collection("Usuarios").doc(teacher.id).collection("Parciales").get();
+          const partials = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          teacher.classes.forEach(classEntry => {
+            classEntry.partials = partials.filter(partial => partial.Clase === classEntry.name).sort((a, b) => Number(a.Numero) - Number(b.Numero));
+            classEntry.records = studentGradeRecords.filter(record => record.DocenteId === teacher.id && record.Clase === classEntry.name);
+          });
+        }));
+        renderTeacherList();
+        renderNotifications();
+      } catch (error) {
+        teachersContent.textContent = "No se pudieron cargar tus maestros: " + error.message;
+        notificationsContent.textContent = "No se pudieron cargar las notificaciones.";
+      }
+    }
+
+    function renderTeacherList() {
+      const content = document.getElementById("teachers-content");
+      if (!studentTeachers.length) {
+        content.textContent = "Aún no hay maestros o materias asignados a tu grupo.";
+        return;
+      }
+      content.innerHTML = studentTeachers.map((teacher, teacherIndex) => `
+        <section class="teacher-row" data-teacher-index="${teacherIndex}">
+          <div class="teacher-name">${escapeHtml(teacher.Nombre || "Docente")}</div>
+          ${teacher.Correo ? `<a class="teacher-email" href="mailto:${encodeURIComponent(teacher.Correo)}">${escapeHtml(teacher.Correo)}</a>` : `<small class="teacher-email">Correo no registrado</small>`}
+          <div class="teacher-classes">${teacher.classes.map((classEntry, classIndex) => `<button type="button" class="student-choice" data-class-index="${classIndex}" aria-pressed="false">${escapeHtml(classEntry.subject)}</button>`).join("")}</div>
+          <div class="partial-list" hidden></div>
+        </section>`).join("");
+    }
+
+    function renderNotifications() {
+      const content = document.getElementById("notifications-content");
+      const updates = new Map();
+      studentGradeRecords.forEach(record => {
+        if (record.Calificacion === null || record.Calificacion === undefined || record.Calificacion === "") return;
+        const teacher = studentTeachers.find(item => item.id === record.DocenteId);
+        if (!teacher) return;
+        const key = `${record.DocenteId}|${record.Clase}|${record.ParcialId}`;
+        const rawDate = record.FechaRegistro?.toDate?.() || record.FechaRegistro;
+        const time = new Date(rawDate || 0).getTime();
+        if (!updates.has(key) || time > updates.get(key).time) updates.set(key, { teacher, record, time });
+      });
+      const recent = [...updates.values()].sort((a, b) => b.time - a.time).slice(0, 8);
+      if (!recent.length) {
+        content.textContent = "Todavía no hay actualizaciones de calificaciones.";
+        return;
+      }
+      content.innerHTML = recent.map(({ teacher, record, time }) => {
+        const partial = teacher.classes.find(item => item.name === record.Clase)?.partials.find(item => item.id === record.ParcialId);
+        const dateLabel = Number.isFinite(time) && time > 0 ? new Date(time).toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" }) : "";
+        return `<div class="student-notice"><strong>Tu profesor, ${escapeHtml(teacher.Nombre || "Docente")}, ha actualizado una calificación.</strong><small>${escapeHtml(record.Clase)} · Parcial ${escapeHtml(partial?.Numero || "—")}${dateLabel ? ` · ${escapeHtml(dateLabel)}` : ""}</small></div>`;
+      }).join("");
+    }
+
+    function renderStudentReport(container, teacher, classEntry, partialNumber, partialId) {
+      const partial = classEntry.partials.find(item => item.id === partialId)
+        || classEntry.partials.find(item => Number(item.Numero) === partialNumber);
+      const records = partial ? classEntry.records.filter(record => record.ParcialId === partial.id) : [];
+      const report = container.querySelector(".student-report");
+      if (studentReportChart) studentReportChart.destroy();
+      studentReportChart = null;
+      if (!partial || !records.length) {
+        report.innerHTML = `<p>No registrado al momento.</p>`;
+        return;
+      }
+      const recordsByCriterion = new Map(records.map(record => [record.Criterio, record]));
+      const criteria = partial.Criterios || records.map(record => ({ nombre: record.Criterio, porcentaje: 0 }));
+      const rows = criteria.map(criterion => {
+        const record = recordsByCriterion.get(criterion.nombre);
+        const raw = record?.Calificacion;
+        const gradeValue = raw === undefined || raw === null || raw === "" ? null : Number(raw);
+        const grade = gradeValue !== null && Number.isFinite(gradeValue) ? gradeValue : null;
+        const evidence = (record?.Evidencias || []).map((item, index) => {
+          try {
+            const url = new URL(item.url);
+            const link = new URL(item.driveUrl || item.url);
+            return url.protocol === "https:" && link.protocol === "https:" ? `<a href="${escapeHtml(link.href)}" target="_blank" rel="noopener">${escapeHtml(item.nombre || `Evidencia ${index + 1}`)}</a>` : "";
+          } catch (error) { return ""; }
+        }).filter(Boolean).join(" · ");
+        const band = getGradeBand(grade);
+        const contribution = grade === null ? "—" : (grade * (Number(criterion.porcentaje) || 0) / 100).toFixed(2);
+        return `<tr><td>${escapeHtml(criterion.nombre)}</td><td>${Number(criterion.porcentaje) || 0}%</td><td>${grade === null ? "Pendiente" : `<strong style="color:${band.color}">${grade.toFixed(1)} · ${band.label}</strong>`}</td><td>${contribution}</td></tr>`;
+      });
+      const assignedWeight = criteria.reduce((sum, criterion) => sum + (Number(criterion.porcentaje) || 0), 0);
+      const capturedWeight = criteria.reduce((sum, criterion) => {
+        const value = recordsByCriterion.get(criterion.nombre)?.Calificacion;
+        return sum + (value !== undefined && value !== null && value !== "" && Number.isFinite(Number(value)) ? Number(criterion.porcentaje) || 0 : 0);
+      }, 0);
+      const total = criteria.reduce((sum, criterion) => {
+        const value = recordsByCriterion.get(criterion.nombre)?.Calificacion;
+        return sum + (value !== undefined && value !== null && value !== "" && Number.isFinite(Number(value)) ? Number(value) * (Number(criterion.porcentaje) || 0) / 100 : 0);
+      }, 0);
+      const complete = criteria.length > 0 && assignedWeight === 100 && capturedWeight === assignedWeight;
+      const overallBand = getGradeBand(total);
+      const commentId = `${teacher.id}_${encodeURIComponent(partial.id)}_${encodeURIComponent(alumnoProfile.Matricula || MATRICULA)}`;
+      const comments = [
+        ...criteria.map(criterion => {
+          const observation = recordsByCriterion.get(criterion.nombre)?.Observaciones;
+          return observation ? `<p><strong>${escapeHtml(criterion.nombre)} · Observación:</strong> ${escapeHtml(observation)}</p>` : "";
+        })
+      ].filter(Boolean).join("");
+      const evidenceCards = criteria.flatMap(criterion => (recordsByCriterion.get(criterion.nombre)?.Evidencias || []).map((item, index) => {
+        try {
+          const url = new URL(item.url);
+          const link = new URL(item.driveUrl || item.url);
+          if (url.protocol !== "https:" || link.protocol !== "https:") return "";
+          const label = item.nombre || `Evidencia ${index + 1}`;
+          return `<a href="${escapeHtml(link.href)}" target="_blank" rel="noopener"><img src="${escapeHtml(url.href)}" alt="Evidencia de ${escapeHtml(criterion.nombre)}"><span>${escapeHtml(criterion.nombre)} · ${escapeHtml(label)}</span></a>`;
+        } catch (error) { return ""; }
+      })).filter(Boolean).join("");
+      const exam = criteria.find(criterion => /examen/i.test(criterion.nombre));
+      const examValue = exam ? recordsByCriterion.get(exam.nombre)?.Calificacion : null;
+      const examGrade = examValue === undefined || examValue === null || examValue === "" ? null : Number(examValue);
+      const examSummary = exam && examGrade !== null && Number.isFinite(examGrade)
+        ? `Examen (${Number(exam.porcentaje) || 0}%): ${examGrade.toFixed(1)} / 10 · aporta ${(examGrade * (Number(exam.porcentaje) || 0) / 100).toFixed(2)} puntos`
+        : exam ? "Examen pendiente de calificar" : "No hay criterio llamado Examen en este parcial";
+      const studentName = alumnoProfile.Nombre || sessionStorage.getItem("fullName") || "Alumno";
+      const gradeLabel = alumnoProfile.Grado ? `${alumnoProfile.Grado}°` : "—";
+      report.innerHTML = `<div class="student-report-heading">${escapeHtml(studentName)} · Grado ${escapeHtml(gradeLabel)} · Grupo ${escapeHtml(alumnoProfile.Grupo || "—")} · ${escapeHtml(classEntry.name)} · Parcial ${partialNumber}</div>
+        <div class="student-report-grid">
+          <div><div class="student-chart-wrap"><canvas class="student-grade-chart" aria-label="Calificaciones de todos los criterios de 0 a 10"></canvas></div><div class="student-exam-summary">${escapeHtml(examSummary)}</div></div>
+          <div><div class="student-report-total">${complete ? "Calificación ponderada" : "Avance ponderado"}: ${total.toFixed(2)} / 10${complete ? "" : ` · Capturado ${capturedWeight}% de ${assignedWeight}%`}</div>
+            <div class="student-report-level" style="color:${complete ? overallBand.color : "#6b7280"}">${complete ? overallBand.label : "Clasificación disponible al completar la captura"}</div>
+            <div class="student-report-table-wrap"><table class="grades-table"><thead><tr><th>Criterio</th><th>Peso</th><th>Nota</th><th>Aporta</th></tr></thead><tbody>${rows.join("") || `<tr><td colspan="4">Este parcial no tiene porcentajes configurados.</td></tr>`}</tbody></table></div>
+          </div>
+        </div>
+        <div class="student-grade-legend"><span style="color:#dc2626">&lt; 6 Deficiente</span><span style="color:#b45309">6–6.9 Necesita apoyo</span><span style="color:#15803d">7–7.9 Puede mejorar</span><span style="color:#0f766e">8–8.9 Eficiente</span><span style="color:#2563eb">9–9.9 Bueno</span><span style="color:#7c3aed">10 Excelente</span></div>
+        <div class="student-report-comments"><strong>Comentario general y observaciones</strong><div data-report-comments><p><strong>Comentario general:</strong> <span data-general-comment="${escapeHtml(commentId)}">Cargando…</span></p>${comments || ""}</div></div>
+        <div class="student-report-comments"><strong>Evidencias por criterio</strong><div class="student-report-evidence">${evidenceCards || "Sin evidencias adjuntas."}</div></div>`;
+      const chartCanvas = report.querySelector(".student-grade-chart");
+      if (window.Chart && chartCanvas) {
+        studentReportChart = new Chart(chartCanvas, {
+          type: "bar",
+          data: {
+            labels: criteria.map(criterion => `${criterion.nombre} (${Number(criterion.porcentaje) || 0}%)`),
+            datasets: [{
+              label: "Calificación sobre 10",
+              data: criteria.map(criterion => {
+                const value = recordsByCriterion.get(criterion.nombre)?.Calificacion;
+                const grade = value === undefined || value === null || value === "" ? null : Number(value);
+                return grade !== null && Number.isFinite(grade) ? grade : null;
+              }),
+              backgroundColor: criteria.map(criterion => getGradeBand(recordsByCriterion.get(criterion.nombre)?.Calificacion).color),
+              borderColor: criteria.map(criterion => getGradeBand(recordsByCriterion.get(criterion.nombre)?.Calificacion).color),
+              borderWidth: 1,
+              borderRadius: 4,
+              maxBarThickness: 26
+            }]
+          },
+          options: {
+            indexAxis: "y",
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: { right: 28 } },
+            scales: {
+              x: { min: 0, max: 10, ticks: { stepSize: 2 }, title: { display: true, text: "Calificación (0–10)" } },
+              y: { grid: { display: false } }
+            },
+            plugins: { legend: { display: false } }
+          }
+        });
+      }
+      db.collection("ComentariosParciales").doc(commentId).get().then(commentSnap => {
+        const comment = commentSnap.exists ? commentSnap.data().Comentario || "" : records.find(record => record.Comentario)?.Comentario || "";
+        const commentNode = report.querySelector("[data-general-comment]");
+        if (commentNode?.dataset.generalComment === commentId) commentNode.textContent = comment || "Sin comentario general registrado.";
+      }).catch(() => {
+        const commentNode = report.querySelector("[data-general-comment]");
+        if (commentNode?.dataset.generalComment === commentId) commentNode.textContent = "Sin comentario general registrado.";
+      });
+    }
+
+    document.getElementById("teachers-content").addEventListener("click", event => {
+      const classButton = event.target.closest("button[data-class-index]");
+      const partialButton = event.target.closest("[data-partial-number]");
+      const teacherRow = event.target.closest("[data-teacher-index]");
+      if (!teacherRow) return;
+      const teacher = studentTeachers[Number(teacherRow.dataset.teacherIndex)];
+      if (classButton) {
+        const classEntry = teacher.classes[Number(classButton.dataset.classIndex)];
+        teacherRow.querySelectorAll("[data-class-index]").forEach(button => button.setAttribute("aria-pressed", String(button === classButton)));
+        const partialList = teacherRow.querySelector(".partial-list");
+        partialList.hidden = false;
+        partialList.innerHTML = `<div class="partial-buttons">${Array.from({ length: 6 }, (_, index) => {
+          const partialNumber = index + 1;
+          const partial = classEntry.partials.find(item => Number(item.Numero) === partialNumber);
+          const recordCount = partial ? classEntry.records.filter(record => record.ParcialId === partial.id).length : 0;
+          const status = recordCount ? `${recordCount} registro(s)` : partial ? "Sin calificaciones" : "Sin configurar";
+          return `<button type="button" class="student-choice partial-choice" data-partial-number="${partialNumber}" data-partial-id="${escapeHtml(partial?.id || "")}" aria-pressed="false"><span>Parcial ${partialNumber}</span><small>${status}</small></button>`;
+        }).join("")}</div><div class="student-report">Selecciona un parcial para consultar el reporte.</div>`;
+        partialList.dataset.selectedClassIndex = classButton.dataset.classIndex;
+      } else if (partialButton) {
+        const partialList = teacherRow.querySelector(".partial-list");
+        const classEntry = teacher.classes[Number(partialList.dataset.selectedClassIndex)];
+        teacherRow.querySelectorAll("[data-partial-number]").forEach(button => button.setAttribute("aria-pressed", String(button === partialButton)));
+        renderStudentReport(partialList, teacher, classEntry, Number(partialButton.dataset.partialNumber), partialButton.dataset.partialId);
+      }
+    });
+
+    document.getElementById("btn-logout").onclick = () => { sessionStorage.clear(); location.href = "index.html"; };
+
+    loadProfile();
+  </script>
+</body>
+</html>
